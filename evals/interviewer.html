@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Interviewer model evals</title>
+<style>
+  body { font: 14px/1.5 system-ui, sans-serif; margin: 16px; max-width: 960px; }
+  pre { white-space: pre-wrap; background: #f4f4f4; padding: 8px; }
+  .meta { color: #666; }
+</style>
+</head>
+<body>
+<h1>Interviewer model evals</h1>
+<p class="meta">
+  Runs the interviewer prompt suite against an in-browser model.
+  Query params: <code>model</code> (default <code>onnx-community/gemma-3-1b-it-ONNX</code>),
+  <code>dtype</code> (default <code>q4</code>), <code>suite</code> (<code>baseline</code>, <code>guided</code> or <code>all</code>).
+  Results land in <code>window.results</code> and can be saved as JSON.
+</p>
+<div id="status">starting</div>
+<button id="save" disabled>Save results as JSON</button>
+<div id="out"></div>
+
+<script type="module">
+import { pipeline } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.3.0';
+
+const params = new URLSearchParams(location.search);
+const MODEL = params.get('model') ?? 'onnx-community/gemma-3-1b-it-ONNX';
+const DTYPE = params.get('dtype') ?? 'q4';
+const SUITE = params.get('suite') ?? 'all';
+
+const out = document.getElementById('out');
+const status = (s) => { document.getElementById('status').textContent = s; window.evalStatus = s; };
+window.results = [];
+
+// ---------------------------------------------------------------------------
+// Fixtures: questions and candidate answers of known quality.
+// ---------------------------------------------------------------------------
+const Q = {
+  pressure: 'Tell me about a time you had to solve a problem under pressure.',
+  improved: 'Tell me about a time you improved something that was not working well.',
+  useEffect: 'Can you explain what the useEffect hook does in React and when you would use it?',
+  leaving: 'Why do you want to leave your current job?',
+};
+const A = {
+  rambling: `Um, so basically there was this time at my internship where, like, the build was broken, and you know, everyone was kind of stressed, and I basically just, um, looked at it and stuff and then it was fixed I guess. It was fine.`,
+  starGood: `In my final year project our React app took 9 seconds to load on mobile. I was responsible for the frontend, so I owned fixing it. I profiled it with Lighthouse, found a 2 MB chart library loaded on every page, lazy loaded it and split the routes. Load time dropped to 2.1 seconds and our demo day score went up.`,
+  we: `So our team had a really slow dashboard, and we decided to rewrite the data layer. We moved to React Query and we added caching, and we also cleaned up a lot of the components. In the end the dashboard was much faster and the client was happy.`,
+  short: `I fixed a bug once that was urgent.`,
+  techPartial: `useEffect is for side effects, like fetching data when the component loads. You put the fetch inside it and it runs after render.`,
+  hr: `Honestly the pay is low and my manager is not great, and there is not much learning anymore.`,
+};
+
+// ---------------------------------------------------------------------------
+// Prompts under test (the guided versions are what the app will use).
+// ---------------------------------------------------------------------------
+const MOODS = {
+  friendly: `Your manner: warm and encouraging. You may start with a few words that echo something specific they said.`,
+  neutral: `Your manner: calm and professional. You may start with "Okay." or "Got it." and nothing more.`,
+  tough: `Your manner: direct and sceptical, like a demanding hiring manager. No praise, no softening. Get straight to the question.`,
+};
+const persona = (mood, name = 'Rahul', role = 'junior frontend developer') => `You are Ananya, a senior engineer interviewing ${name} for a ${role} role. This is a spoken mock interview: every word you write is read aloud.
+
+How you speak:
+- Like a real person across the table: plain, natural spoken English. Contractions are fine.
+- At most two short sentences, under 30 words in total.
+- No quotation marks, no markdown, no lists, no emojis.
+- Never say "good start", "great answer" or similar praise. Never teach, never answer for them, never give feedback.
+
+${MOODS[mood]}`;
+
+const ANGLES = {
+  expand: 'The answer was very short. Ask them to walk you through it in more detail.',
+  ownership: 'They kept saying "we". Ask what they personally did, as opposed to the team.',
+  outcome: 'They never said how it turned out. Ask for the result, ideally a number or something measurable.',
+  specifics: 'The answer was vague. Ask for the concrete steps they took.',
+  deeper: 'The answer was complete. Ask one deeper question: a trade-off they made, or how they knew it worked.',
+  edgecase: 'Ask a "what happens if" question about an edge case of what they explained.',
+  motivation: 'Ask what they are looking for in their next role.',
+};
+
+// Multi-turn: the model plays the interviewer's next turn; the angle rides along
+// as a note on the candidate's turn. A single instruction block made a 1B model
+// re-enact the transcript instead.
+const guidedFollowUp = (mood, q, a, angle) => [
+  { role: 'user', content: `${persona(mood)}\n\nRahul has just sat down. Ask your first question.` },
+  { role: 'assistant', content: q },
+  { role: 'user', content: `${a}\n\n[Note for Ananya, not said aloud: ${ANGLES[angle]} Refer to one detail he said. One question, under 30 words.]` },
+];
+
+const reaction = (mood, a) => [{ role: 'user', content: `${persona(mood)}\n\nRahul just answered: ${a}
+
+You are moving on to the next topic. Say one short sentence, under 10 words, that closes this topic, like "Thanks, that's clear." or "Okay, let's move on." Do not ask anything.
+Write only the words you say out loud.` }];
+
+const tip = (q, a, facts) => [{ role: 'user', content: `An interview candidate answered a practice question.
+Measured by software: ${facts}
+Question: "${q}"
+Answer: "${a}"
+
+Write one specific tip to improve this answer, addressed to the candidate as "you", in one sentence under 30 words. Point at something they actually said or left out. Write only the tip.` }];
+
+const starJudge = (a) => [{ role: 'user', content: `Judge this interview answer with the STAR method. Reply with JSON only, no other text, in this shape:
+{"situation": true/false, "task": true/false, "action": true/false, "result": true/false, "tip": "one sentence"}
+A part is true only if the answer clearly states it.
+
+Answer: "${a}"` }];
+
+const codeReview = (problem, code) => [{ role: 'user', content: `You are a coding interviewer. Problem: "${problem}"
+Candidate's pseudo-code:
+${code}
+
+Is it correct? Reply in this shape:
+Verdict: correct or incorrect
+Bug: the bug in one sentence, or none
+Edge cases: one sentence` }];
+
+// Guard: what the app does to every interviewer line before it is spoken.
+// Returns null when the line is unusable and a written fallback should be used.
+const guard = (text, asked = '', answer = '', mustAsk = true) => {
+  const norm = (s) => s.toLowerCase().replace(/[^a-z ]/g, '').trim();
+  const t = text.replace(/[“”"*_#\[\]]/g, '').replace(/\s+/g, ' ').trim();
+  let ss = (t.match(/[^.!?]+[.!?]+/g) ?? [t]).map((s) => s.trim())
+    .filter((s) => !/good start|good example|great answer|excellent|amazing|let.s start/i.test(s))
+    .filter((s) => norm(s) !== norm(asked) && !(answer && norm(answer).includes(norm(s))));
+  if (!mustAsk) {
+    ss = ss.filter((s) => !s.endsWith('?')).slice(0, 1);
+    return ss.length ? ss[0] : null;
+  }
+  const qi = ss.findIndex((s) => s.endsWith('?'));
+  return qi === -1 ? null : ss.slice(Math.max(0, qi - 1), qi + 1).join(' ');
+};
+
+// ---------------------------------------------------------------------------
+// Suites. `expect` is what a human grader looks for; it is not auto-scored.
+// ---------------------------------------------------------------------------
+const baseline = [
+  { name: 'opening question', max: 128, messages: [
+    { role: 'system', content: 'You are Riya, a friendly but sharp interviewer for a junior frontend developer role. Ask exactly ONE question at a time, under 40 words, spoken aloud, no lists or markdown.' },
+    { role: 'user', content: 'Hi, I am ready. Interview type: behavioural.' }], expect: 'One behavioural question.' },
+  { name: 'STAR judge: rambling answer', max: 160, messages: starJudge(A.rambling), expect: 'situation true (internship, broken build), task/action weak, result false. Valid JSON with booleans.' },
+  { name: 'STAR judge: strong answer', max: 160, messages: starJudge(A.starGood), expect: 'All four true. Valid JSON with booleans.' },
+  { name: 'questions from a job description', max: 200, messages: [{ role: 'user', content: `Job description: "Junior Frontend Engineer. React, TypeScript, REST APIs, writing tests with Jest, working with designers in Figma. You will build dashboards for logistics customers."
+Write 4 interview questions for this role, one per line, no numbering, each under 25 words. Mix 2 technical and 2 behavioural.` }], expect: '4 relevant questions, one per line.' },
+  { name: 'code review: off-by-one', max: 200, messages: codeReview('Return the largest number in a list.', `max = list[0]
+for i from 1 to length(list) - 2:
+    if list[i] > max: max = list[i]
+return max`), expect: 'Incorrect: the loop stops one early and never checks the last element. Empty list not handled.' },
+  { name: 'code review: correct palindrome', max: 200, messages: codeReview('Return true if a string is a palindrome.', `left = 0, right = length(s) - 1
+while left < right:
+    if s[left] != s[right]: return false
+    left = left + 1; right = right - 1
+return true`), expect: 'Correct, no bug. Empty string returns true, which is fine.' },
+];
+
+const guided = [];
+for (const [mood, q, a, angle] of [
+  ['friendly', Q.pressure, A.rambling, 'specifics'], ['neutral', Q.pressure, A.rambling, 'outcome'], ['tough', Q.pressure, A.rambling, 'specifics'],
+  ['friendly', Q.improved, A.we, 'ownership'], ['neutral', Q.improved, A.we, 'ownership'], ['tough', Q.improved, A.we, 'ownership'],
+  ['neutral', Q.improved, A.starGood, 'deeper'], ['tough', Q.improved, A.starGood, 'deeper'],
+  ['friendly', Q.pressure, A.short, 'expand'], ['tough', Q.pressure, A.short, 'expand'],
+  ['neutral', Q.useEffect, A.techPartial, 'edgecase'], ['tough', Q.leaving, A.hr, 'motivation'],
+]) {
+  guided.push({ name: `follow-up / ${mood} / ${angle}`, max: 60, messages: guidedFollowUp(mood, q, a, angle),
+    post: (raw) => guard(raw, q, a, true), expect: `One question that does: ${ANGLES[angle]}` });
+}
+for (const [mood, a] of [['friendly', A.starGood], ['tough', A.rambling], ['neutral', A.we]]) {
+  guided.push({ name: `reaction / ${mood}`, max: 30, messages: reaction(mood, a),
+    post: (raw) => guard(raw, '', '', false), expect: 'One short closing sentence, no question, no praise.' });
+}
+guided.push({ name: 'tip / rambling', max: 80, messages: tip(Q.pressure, A.rambling, '38 seconds, 9 filler words, 171 words per minute, STAR parts missing: task, result'), expect: 'Specific, actionable, addressed as "you".' });
+guided.push({ name: 'tip / "we" answer', max: 80, messages: tip(Q.improved, A.we, '41 seconds, 1 filler word, 140 words per minute, STAR parts missing: task'), expect: 'Mentions personal role or a number.' });
+guided.push({ name: 'tip / HR', max: 80, messages: tip(Q.leaving, A.hr, '12 seconds, 0 filler words, 150 words per minute'), expect: 'Suggests positive framing.' });
+
+const suites = { baseline, guided, all: [...baseline, ...guided] };
+
+// ---------------------------------------------------------------------------
+// Run.
+// ---------------------------------------------------------------------------
+try {
+  if (!navigator.gpu) throw new Error('No WebGPU in this browser');
+  status(`loading ${MODEL} (${DTYPE})`);
+  const t0 = performance.now();
+  let lastPct = -1;
+  const gen = await pipeline('text-generation', MODEL, {
+    device: 'webgpu', dtype: DTYPE,
+    progress_callback: (p) => {
+      if (p.status === 'progress' && /onnx_data/.test(p.file ?? '')) {
+        const pct = Math.floor(p.progress);
+        if (pct !== lastPct) { lastPct = pct; status(`downloading ${p.file}: ${pct}%`); }
+      }
+    },
+  });
+  window.loadSeconds = +((performance.now() - t0) / 1000).toFixed(1);
+
+  const cases = suites[SUITE];
+  for (const [i, c] of cases.entries()) {
+    status(`running ${i + 1}/${cases.length}: ${c.name}`);
+    const s = performance.now();
+    const res = await gen(c.messages, { max_new_tokens: c.max, do_sample: false });
+    const raw = res[0].generated_text.at(-1).content.trim();
+    const ms = Math.round(performance.now() - s);
+    const tokens = gen.tokenizer.encode(raw).length;
+    const spoken = c.post ? c.post(raw) : undefined;
+    window.results.push({ name: c.name, ms, tokens, raw, spoken, expect: c.expect });
+    out.insertAdjacentHTML('beforeend', `<h3></h3><p class="meta"></p><pre></pre>`);
+    const [h, meta, pre] = [...out.children].slice(-3);
+    h.textContent = c.name;
+    meta.textContent = `${ms} ms, ${tokens} tokens. Expect: ${c.expect}`;
+    pre.textContent = c.post ? `RAW: ${raw}\nSPOKEN: ${spoken ?? '(written fallback)'}` : raw;
+  }
+  status(`done: ${MODEL} (${DTYPE}), load ${window.loadSeconds} s`);
+
+  const btn = document.getElementById('save');
+  btn.disabled = false;
+  btn.onclick = () => {
+    const blob = new Blob([JSON.stringify({ model: MODEL, dtype: DTYPE, loadSeconds: window.loadSeconds, results: window.results }, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `${MODEL.split('/').pop()}-${DTYPE}.json`;
+    a.click();
+  };
+} catch (e) {
+  status('error: ' + (e?.message || e));
+}
+</script>
+</body>
+</html>
