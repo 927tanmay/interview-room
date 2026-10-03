@@ -31,3 +31,10 @@ design, add this to docs/UX.md:
 - use the blur on a few big panels only, not every element. the gpu is busy with the models and the avatar.
 - text and captions must stay readable on glass, keep proper contrast. fall back to solid panels if backdrop-filter isn't supported or the user prefers reduced transparency.
 - no flashy animations. small, smooth transitions only, and respect reduced motion.
+
+---
+
+take the scores out of the plan. show only what was measured (time, words, wpm, filler counts) plus quotes, with a plain comparison where it helps, like "most behavioural answers aim for about 2 min". update docs/UX.md so the rule says no scores out of 100, not just no made up scores.
+star parts only go in if the gemma 4 e2b eval shows the review model gets them right. if it doesn't, leave them out or call them "possible gaps", not a measurement.
+
+also commit the changes till now, remove no co-authored by line
