@@ -41,9 +41,10 @@ Deadline: Mon 5 Oct 2026, 12:29 IST (06:59 UTC).
   type, STAR grid (question x S/T/A/R), key points covered.
 - Per answer: transcript with fillers highlighted and the over-time part shaded,
   numbers, the follow-up asked, the sample answer, and Gemma's review.
-- **Deep review by Gemma 4 E2B** (after the interview, on the device): STAR
-  judgement, what was missing compared with the sample answer, and the weakest
-  answer rewritten in the candidate's own words.
+- **Deep review by Gemma 4 E2B** (Heavy mode, after the interview, on the
+  device): code review, what was missing compared with the sample answer, and
+  the weakest answer rewritten in the candidate's own words. STAR parts come
+  from code, not the model.
 - Progress across sessions (IndexedDB): fillers per minute, pace, STAR coverage,
   answer length over time. Export and delete.
 
@@ -54,11 +55,22 @@ Deadline: Mon 5 Oct 2026, 12:29 IST (06:59 UTC).
 | Speech detection | Silero VAD | ~2 MB | via the package |
 | Hearing | Whisper base (en) | ~150 MB | via the package |
 | Voice | Kokoro-82M (fp32) | ~310 MB | via the package |
-| Interviewer (live, ~1 s replies) | Gemma 3 1B (q4) | 859 MB | tested: good follow-ups with a guard |
-| Reviewer (after the interview) | Gemma 4 E2B (q4f16, text parts) | ~3.1 GB | **to test** |
+| Gemma, **Light** mode | Gemma 3 1B (q4) | 859 MB | tested: good follow-ups with a guard, cannot judge |
+| Gemma, **Heavy** mode | Gemma 4 E2B (q4f16, text parts) | 3.11 GB | tested: better follow-ups at the same speed on an M4, reviews code correctly |
 
-If Gemma 4 E2B replies fast enough on an M2 Pro, it can also be the live
-interviewer and Gemma 3 1B becomes the light option for weaker laptops.
+Two modes, chosen by the candidate on the home page. **Only the chosen mode's
+Gemma is downloaded**; the other is never fetched unless the candidate switches
+mode. If the system cannot run Heavy, the app falls back to Light and says why.
+"Cannot run Heavy" means the WebGPU adapter lacks `shader-f16` (needed for
+q4f16) or loading Gemma 4 E2B fails. Light (q4) does not need `shader-f16`.
+
+- **Heavy:** Gemma 4 E2B is both the live interviewer and the reviewer. One
+  model, loaded once.
+- **Light:** Gemma 3 1B is the live interviewer. For weaker laptops or slow
+  connections (4 min first load vs 14 min on my connection).
+
+In both modes, STAR parts and every score are computed by code (neither model
+judges STAR reliably). See [MODEL-TESTS.md](MODEL-TESTS.md), runs 4 and 5.
 
 ### Who does what
 
@@ -66,15 +78,16 @@ interviewer and Gemma 3 1B becomes the light option for weaker laptops.
 |---|---|
 | Microphone, VAD, Whisper, Kokoro, avatar, barge-in | react-ai-voice-avatar |
 | Interview order, timing, what to probe, recovery | The app's engine (plain code) |
-| Follow-ups, reactions, rephrasing, questions from a JD | Gemma 3 1B (app's own worker, through `onSubmit`) |
-| Judgement, gaps, rewritten answer | Gemma 4 E2B |
+| Follow-ups, reactions, rephrasing, questions from a JD | The mode's Gemma (app's own worker, through `onSubmit`) |
+| Code review, gaps, rewritten answer | Gemma 4 E2B (Heavy mode) |
 | Every number and score | Plain code, formulas shown |
 
 ---
 
 ## 2. Priorities
 
-**P0, must ship (Sat):** setup, mic check, interview engine with follow-ups and
+**P0, must ship (Sat):** home page with the Light / Heavy choice (fallback to
+Light when Heavy is unsupported), setup, mic check, interview engine with follow-ups and
 recovery, interview room, per-answer metrics, report with charts and sample
 answers, first-load download screen, offline after first load, question bank
 for all three tracks.
@@ -188,9 +201,11 @@ Gemma only sees the current question's intent and the angle for this turn.
 - [ ] Prize Categories section lists every category entered.
 
 ### Package changes made during the weekend
-The fixes to react-ai-voice-avatar (long-answer transcription, empty
-`onSubmit`) go into the existing package. The post says so: the app is new,
-the library it depends on got two fixes this weekend.
+The fixes to react-ai-voice-avatar went into the existing package as 0.7.0
+(published 3 Oct 2026): long-answer transcription, empty `onSubmit` replies,
+plus `speechMs` and the `model-cache` entry point. The app uses 0.7.0. The post
+says so: the app is new, the library it depends on got these fixes this
+weekend.
 
 ---
 
@@ -228,7 +243,10 @@ with Gemma and Render as the strongest categories.
 ---
 
 ## 8. Open decisions
-1. Gemma 4 E2B download for testing (~3.1 GB).
-2. Entire CLI: install and connect to Claude Code now, so the rest of the build
+1. ~~Gemma 4 E2B download for testing~~ Done: runs 4 and 5 in MODEL-TESTS.md;
+   Light / Heavy modes chosen on the home page.
+2. Light mode after the interview: no deep review, or an opt-in "Get deep
+   review" button that downloads Gemma 4 E2B (3.11 GB) only when pressed.
+3. Entire CLI: install and connect to Claude Code now, so the rest of the build
    is captured.
-3. Backboard model comparison: worth an hour, or skip.
+4. Backboard model comparison: worth an hour, or skip.
