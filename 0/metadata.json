@@ -1,0 +1,115 @@
+{
+  "cli_version": "0.11.3",
+  "checkpoint_id": "01M40J62R8V4Z953A2VE5VVEDW",
+  "session_id": "e0972c9d-f551-419e-8995-044a83f59546",
+  "strategy": "manual-commit",
+  "created_at": "2026-10-03T09:40:37.116995Z",
+  "branch": "main",
+  "checkpoints_count": 3,
+  "save_step_count": 2,
+  "files_touched": [
+    "docs/PLAN.md",
+    "docs/TASKS.md",
+    "docs/UX.md",
+    "index.html",
+    "public/icons.svg",
+    "src/App.css",
+    "src/App.tsx",
+    "src/app/state.ts",
+    "src/assets/hero.png",
+    "src/assets/react.svg",
+    "src/assets/vite.svg",
+    "src/components/ScreenFrame.tsx",
+    "src/engine/EngineHost.tsx",
+    "src/engine/PhoneEngine.tsx",
+    "src/engine/VideoEngine.tsx",
+    "src/index.css",
+    "src/screens/Home.tsx",
+    "src/screens/Interview.tsx",
+    "src/screens/Report.tsx",
+    "src/screens/Setup.tsx",
+    "vite.config.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-5-5",
+  "turn_id": "8671c0360f8e",
+  "checkpoint_transcript_start": 566,
+  "transcript_lines_at_start": 566,
+  "compact_transcript_start": 105,
+  "token_usage": {
+    "input_tokens": 122,
+    "cache_creation_tokens": 98957,
+    "cache_read_tokens": 14199375,
+    "output_tokens": 63011,
+    "api_call_count": 61
+  },
+  "session_metrics": {
+    "turn_count": 10
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-10-03T09:40:37.062085Z",
+    "agent_lines": 437,
+    "agent_removed": 292,
+    "human_added": 0,
+    "human_modified": 72,
+    "human_removed": 87,
+    "total_committed": 494,
+    "total_lines_changed": 894,
+    "agent_percentage": 81.54362416107382,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 459,
+      "user_lines_removed": 125,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".claude/launch.json": 11,
+        ".claude/settings.json": 90,
+        "docs/PLAN.md": 3,
+        "docs/TASKS.md": 10,
+        "docs/UX.md": 73,
+        "index.html": 2,
+        "src/App.tsx": 34,
+        "src/app/state.ts": 35,
+        "src/components/PrivacyNote.tsx": 10,
+        "src/components/ScreenFrame.tsx": 21,
+        "src/screens/Home.tsx": 36,
+        "src/screens/Interview.tsx": 53,
+        "src/screens/Report.tsx": 23,
+        "src/screens/Setup.tsx": 49,
+        "vite.config.ts": 9
+      },
+      "user_removed_per_file": {
+        "docs/PLAN.md": 2,
+        "docs/TASKS.md": 8,
+        "index.html": 1,
+        "src/App.tsx": 114
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 107,
+      "user_lines_removed": 0,
+      "agent_lines_added": 668,
+      "agent_lines_removed": 414,
+      "user_added_per_file": {
+        ".claude/launch.json": 17,
+        ".claude/settings.json": 90
+      }
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 107,
+      "user_lines_removed": 0,
+      "agent_lines_added": 939,
+      "agent_lines_removed": 417,
+      "user_added_per_file": {
+        ".claude/launch.json": 17,
+        ".claude/settings.json": 90
+      }
+    }
+  ]
+}

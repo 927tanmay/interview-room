@@ -1,0 +1,46 @@
+{
+  "cli_version": "0.11.3",
+  "checkpoint_id": "01M40J62R8V4Z953A2VE5VVEDW",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "docs/PLAN.md",
+    "docs/TASKS.md",
+    "docs/UX.md",
+    "index.html",
+    "public/icons.svg",
+    "src/App.css",
+    "src/App.tsx",
+    "src/app/state.ts",
+    "src/assets/hero.png",
+    "src/assets/react.svg",
+    "src/assets/vite.svg",
+    "src/components/ScreenFrame.tsx",
+    "src/engine/EngineHost.tsx",
+    "src/engine/PhoneEngine.tsx",
+    "src/engine/VideoEngine.tsx",
+    "src/index.css",
+    "src/screens/Home.tsx",
+    "src/screens/Interview.tsx",
+    "src/screens/Report.tsx",
+    "src/screens/Setup.tsx",
+    "vite.config.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 122,
+    "cache_creation_tokens": 98957,
+    "cache_read_tokens": 14199375,
+    "output_tokens": 63011,
+    "api_call_count": 61
+  }
+}
