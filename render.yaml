@@ -1,0 +1,46 @@
+# Render Blueprint: Interview Room as a free static site.
+# Everything runs in the visitor's browser; the models download from Hugging
+# Face (and the voice detector, ONNX runtime and avatar from jsDelivr) at run
+# time, so nothing heavy is built or hosted here.
+services:
+  - name: interview-room
+    type: web
+    runtime: static
+    plan: free
+    buildCommand: npm ci && npm run build
+    staticPublishPath: ./dist
+    autoDeployTrigger: commit
+    envVars:
+      # Same Node as local development (also in .node-version).
+      - key: NODE_VERSION
+        value: 24.9.0
+    headers:
+      # Cross-origin isolation, matching the Vite dev and preview servers
+      # (vite.config.ts), so the ONNX runtime can use multithreaded WASM.
+      # Every cross-origin load the app makes still works under these: Hugging
+      # Face answers with CORS headers, jsDelivr with CORS and
+      # Cross-Origin-Resource-Policy: cross-origin.
+      - path: /*
+        name: Cross-Origin-Opener-Policy
+        value: same-origin
+      - path: /*
+        name: Cross-Origin-Embedder-Policy
+        value: require-corp
+      # Hashed build files never change, so browsers can keep them; the page
+      # itself is always checked, so a new deploy is picked up.
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+      - path: /
+        name: Cache-Control
+        value: no-cache
+      - path: /index.html
+        name: Cache-Control
+        value: no-cache
+    routes:
+      # The app has no URL routes, but any unknown path (a typo, an old link)
+      # loads the app instead of a 404. Render only applies this when no file
+      # exists at the path, so real assets are never rewritten.
+      - type: rewrite
+        source: /*
+        destination: /index.html
