@@ -2,7 +2,7 @@ import { ScreenFrame } from '../components/ScreenFrame'
 
 // Placeholder (step 0.2). Phase 5 fills it in: specific to what they said,
 // quoting their answers, measured numbers only (UX.md: report).
-export function Report({ onPractiseAgain, onHome }: { onPractiseAgain: () => void; onHome: () => void }) {
+export function Report({ onPracticeAgain, onHome }: { onPracticeAgain: () => void; onHome: () => void }) {
   return (
     <ScreenFrame title="Your interview">
       <section aria-labelledby="answers-title" className="panel">
@@ -14,8 +14,8 @@ export function Report({ onPractiseAgain, onHome }: { onPractiseAgain: () => voi
         <button type="button" onClick={onHome}>
           Home
         </button>
-        <button type="button" className="primary" onClick={onPractiseAgain}>
-          Practise again
+        <button type="button" className="primary" onClick={onPracticeAgain}>
+          Practice again
         </button>
       </div>
     </ScreenFrame>

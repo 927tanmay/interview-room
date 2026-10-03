@@ -45,6 +45,32 @@ export class GemmaClient {
     })
   }
 
+  // The reply as an async iterable of text, which the package speaks a
+  // sentence at a time while the rest is still being generated.
+  async *stream(messages: ChatMessage[], opts: { maxNewTokens: number }): AsyncGenerator<string> {
+    const queue: string[] = []
+    let done = false
+    let error: Error | null = null
+    let wake: (() => void) | null = null
+    const nudge = () => wake?.()
+    this.generate(messages, { maxNewTokens: opts.maxNewTokens, onToken: (t) => (queue.push(t), nudge()) }).then(
+      () => ((done = true), nudge()),
+      (e: Error) => ((error = e), (done = true), nudge()),
+    )
+    while (true) {
+      if (queue.length) {
+        yield queue.shift()!
+        continue
+      }
+      if (done) {
+        if (error) throw error
+        return
+      }
+      await new Promise<void>((r) => (wake = r))
+      wake = null
+    }
+  }
+
   stop() {
     this.send({ type: 'stop' })
   }

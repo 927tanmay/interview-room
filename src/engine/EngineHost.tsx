@@ -1,4 +1,6 @@
-import { lazy, Suspense, useEffect, useRef, type Dispatch } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useRef, type Dispatch } from 'react'
+import { createPlaceholderBrain } from '../interview/placeholderBrain'
+import { resetVoice } from './voiceStore'
 import { DOWNLOADS } from '../app/downloads'
 import type { Display, Mode } from '../app/state'
 import { GemmaClient } from '../gemma/GemmaClient'
@@ -26,6 +28,15 @@ export function EngineHost({
   onLoad: Dispatch<LoadAction>
 }) {
   const gemma = useRef<GemmaClient | null>(null)
+  const brain = useRef<ReturnType<typeof createPlaceholderBrain> | null>(null)
+
+  // What the package calls with each stretch of speech Whisper transcribed.
+  // Stable identity; it reads the current brain at call time.
+  const onSubmit = useCallback((text: string) => brain.current?.onSubmit(text) ?? '', [])
+  // The candidate talked over the interviewer: stop generating the rest.
+  const onInterrupt = useCallback(() => gemma.current?.stop(), [])
+
+  useEffect(() => () => resetVoice(), [])
 
   useEffect(() => {
     onLoad({ type: 'reset', items: itemsFor(display) })
@@ -37,6 +48,7 @@ export function EngineHost({
   useEffect(() => {
     const client = new GemmaClient()
     gemma.current = client
+    brain.current = createPlaceholderBrain(client)
     // Measured against the model's known size, not the files seen so far: the
     // small config and tokenizer files finish before the weights start, and a
     // running total would read 100% with 859 MB still to come.
@@ -57,18 +69,22 @@ export function EngineHost({
       })
     return () => {
       gemma.current = null
+      brain.current = null
       client.dispose()
     }
   }, [mode, onLoad])
 
   return (
-    <div className="engine-host" hidden={!visible}>
+    // Off stage rather than display:none while hidden: the 3D canvas needs a
+    // real size, or react-three-fiber never mounts the avatar (and with it the
+    // engine that loads Whisper and Kokoro).
+    <div className={visible ? 'engine-host' : 'engine-host engine-host--offstage'} aria-hidden={!visible || undefined}>
       {display === 'video' ? (
         <Suspense fallback={<div className="stage stage-video" aria-hidden="true" />}>
-          <VideoEngine mode={mode} />
+          <VideoEngine onLoad={onLoad} visible={visible} onSubmit={onSubmit} onInterrupt={onInterrupt} />
         </Suspense>
       ) : (
-        <PhoneEngine onLoad={onLoad} />
+        <PhoneEngine onLoad={onLoad} onSubmit={onSubmit} onInterrupt={onInterrupt} />
       )}
     </div>
   )

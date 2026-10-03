@@ -95,30 +95,26 @@ code:
 
 ## Phase 2: Voice pipeline (Sat)
 
-- [ ] **2.1 Wire the hook.** `useAiVoiceAvatar` with `onSubmit` going to the
-  Gemma worker, Kokoro on **fp32**, the avatar with the `ananya` / `aarav`
-  preset. In `EngineHost`: `PhoneEngine` runs the headless hook,
-  `VideoEngine` (lazy) runs `<AiVoiceAvatar>`; both take the same config and
-  expose the same controls (status, speak, interrupt, start/stop listening)
-  to the interview logic. Check that the engine is not remounted between
-  setup and interview (workers keep running).
-  Phone part done: `PhoneEngine` runs the headless hook (Kokoro, `onSubmit`
-  returning '' for now) and reports Whisper and Kokoro progress. Video part
-  (`<AiVoiceAvatar>`, avatar progress) still to do.
-  **Watch:** once, the Gemma weights and tokenizer entries vanished from OPFS
-  between two loads, cause not found (transformers.js only deletes through
-  `clear_cache`; the package only clears an entry right before rewriting
-  it). Not reproduced since. Dev builds log every Gemma cache call
-  (`[Gemma cache]` in the console) to catch it if it happens again. Check that Kokoro loads fp32 (worker log "Initializing Kokoro-82M on
-  WebGPU (fp32)") and that the package does not fetch its own LLM.
+- [x] **2.1 Wire the hook.** In `EngineHost`: `PhoneEngine` runs the headless
+  hook, `VideoEngine` (lazy) runs `<AiVoiceAvatar>` (Ananya, Kokoro fp32);
+  both take the same `onSubmit` (the app's Gemma, streamed) and publish the
+  same state and controls through `src/engine/voiceStore.ts`. The engine is
+  not remounted between setup and interview. A placeholder interviewer
+  (`src/interview/placeholderBrain.ts`) answers until phase 3. Tested by
+  Tanmay in Chrome, phone and video: spoken loop, barge-in, lip sync.
+  While hidden on setup, the engine sits off stage at a real size (a
+  `display:none` canvas never mounts the avatar).
+  **Watch:** the OPFS cache was wiped twice in the Claude browser pane
+  (2.6 GB, memory-backed quota); fine in desktop Chrome. Dev builds log every
+  Gemma cache call (`[Gemma cache]`).
 - [ ] **2.2 Check: empty `onSubmit` reply goes back to listening** (fixed in
-  0.7.0). Return `undefined` for a mid-answer pause; the status must leave
-  "thinking" and the next stretch of speech must arrive.
-- [ ] **2.3 Check: answers over 30 s come back whole** (fixed in 0.7.0). Speak
-  for about 60 s without a pause; the transcript must cover all of it, and
-  `speechMs` must be close to the real duration.
-- [ ] **2.4 Mic check screen.** Level meter, say a test sentence, see the
-  transcript, hear the voice. Handles a denied or lost microphone.
+  0.7.0). Checked in step 3.2, the first place the app returns empty replies
+  (collecting an answer across pauses).
+- [x] **2.3 Check: answers over 30 s come back whole** (fixed in 0.7.0).
+  Tested by Tanmay in Chrome.
+- [ ] **2.4 Mic check.** Folded into 4.1 (setup page): explain why, then a
+  level meter, a test sentence, see the transcript, hear the voice. Handles a
+  denied or lost microphone.
 
 ## Phase 3: Interview engine (Sat)
 
@@ -153,6 +149,12 @@ code:
 - [ ] **4.2 Interview room.** Avatar, question card, live captions, answer
   timer (amber, then red past the target), progress dots, I'm done / Pause /
   Skip / End.
+  **Phone screen display:** an illuminating, audio-reactive orb in the style
+  of Gemini Live and the package's `examples/voice-only`: glows with the
+  candidate's voice while listening and with the interviewer's while
+  speaking (`onAudioLevelChange`, source `mic` / `tts`), a slow calm pulse
+  while thinking. Accent colour only, GPU-light (CSS or one small canvas, no
+  blur stacks), static glow under reduced motion.
 - [ ] **4.3 Milestone: first full spoken interview end to end** in Light,
   both video and phone. Note what breaks.
 

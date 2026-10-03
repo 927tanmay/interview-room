@@ -21,7 +21,7 @@ export type AppAction =
   | { type: 'chooseDisplay'; display: Display }
   | { type: 'startInterview' }
   | { type: 'finishInterview' }
-  | { type: 'practiseAgain' }
+  | { type: 'practiceAgain' }
   | { type: 'goHome' }
 
 export const initialState: AppState = { screen: 'home', mode: null, display: null }
@@ -36,7 +36,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       return state.mode && state.display ? { ...state, screen: 'interview' } : state
     case 'finishInterview':
       return { ...state, screen: 'report' }
-    case 'practiseAgain':
+    case 'practiceAgain':
       return { ...state, display: null, screen: 'setup' }
     case 'goHome':
       return { ...state, display: null, screen: 'home' }

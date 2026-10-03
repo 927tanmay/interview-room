@@ -108,8 +108,15 @@ footer {
   min-width: 0;
 }
 
-.engine-host[hidden] {
-  display: none;
+/* Hidden on the setup screen while the models load, but kept at a real size
+   so the avatar's canvas mounts. */
+.engine-host--offstage {
+  position: fixed;
+  left: -10000px;
+  top: 0;
+  width: 360px;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 /* Glass: only on the few big panels that carry the .glass class. */

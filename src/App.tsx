@@ -4,6 +4,7 @@ import { useDeviceCheck } from './app/useDeviceCheck'
 import { PrivacyNote } from './components/PrivacyNote'
 import { EngineHost } from './engine/EngineHost'
 import { loadReducer } from './engine/loading'
+import { voiceControls } from './engine/voiceStore'
 import { Home } from './screens/Home'
 import { Interview } from './screens/Interview'
 import { Report } from './screens/Report'
@@ -42,7 +43,12 @@ function App() {
             display={state.display}
             load={load}
             onChooseDisplay={(display) => dispatch({ type: 'chooseDisplay', display })}
-            onStart={() => dispatch({ type: 'startInterview' })}
+            onStart={() => {
+              // Opened inside the click: the browser needs a user gesture for
+              // the microphone and for audio playback.
+              void voiceControls()?.startListening()
+              dispatch({ type: 'startInterview' })
+            }}
             onBack={() => dispatch({ type: 'goHome' })}
           />
         )}
@@ -54,7 +60,7 @@ function App() {
         )}
         {state.screen === 'report' && (
           <Report
-            onPractiseAgain={() => dispatch({ type: 'practiseAgain' })}
+            onPracticeAgain={() => dispatch({ type: 'practiceAgain' })}
             onHome={() => dispatch({ type: 'goHome' })}
           />
         )}

@@ -5,7 +5,7 @@ step is checked, it is checked against this page too.
 
 ## Who it is for
 
-My friend, practising interviews alone. No login, no clutter, nothing
+My friend, practicing interviews alone. No login, no clutter, nothing
 gamified: no streaks, badges, confetti or levels. Calm and plain, like a real
 interview room.
 
@@ -60,6 +60,8 @@ interview room.
   The answer ends when they press **I'm done**, or after a long pause (much
   longer than a gap between sentences).
 - Always available: **Repeat question**, **Skip**, **End interview**.
+- Phone screen: an illuminating orb that responds to whoever is speaking
+  (like Gemini Live), calm rather than flashy, still under reduced motion.
 
 ## Report
 
