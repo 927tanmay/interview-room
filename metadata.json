@@ -1,0 +1,36 @@
+{
+  "cli_version": "0.11.3",
+  "checkpoint_id": "01M41TXG5AFA669C0PRDBE841C",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "docs/TASKS.md",
+    "src/App.tsx",
+    "src/components/AnswerTimer.tsx",
+    "src/components/Orb.tsx",
+    "src/components/ProgressDots.tsx",
+    "src/dev/RoomPreview.tsx",
+    "src/index.css",
+    "src/interview/engine.ts",
+    "src/screens/Interview.tsx",
+    "src/voice/PhoneVoice.tsx",
+    "src/voice/VoiceHost.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 796,
+    "cache_creation_tokens": 2281470,
+    "cache_read_tokens": 146958645,
+    "output_tokens": 430734,
+    "api_call_count": 397
+  }
+}
