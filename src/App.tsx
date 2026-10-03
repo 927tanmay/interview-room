@@ -1,17 +1,18 @@
 import { lazy, Suspense, useReducer } from 'react'
-import { appReducer, initialState, isEngineMounted } from './app/state'
+import { appReducer, initialState, isVoiceMounted } from './app/state'
 import { useDeviceCheck } from './app/useDeviceCheck'
 import { PrivacyNote } from './components/PrivacyNote'
-import { EngineHost } from './engine/EngineHost'
-import { loadReducer } from './engine/loading'
-import { voiceControls } from './engine/voiceStore'
+import { VoiceHost } from './voice/VoiceHost'
+import { loadReducer } from './voice/loading'
+import { voiceControls } from './voice/voiceStore'
 import { Home } from './screens/Home'
 import { Interview } from './screens/Interview'
 import { Report } from './screens/Report'
 import { Setup } from './screens/Setup'
 
-// Dev-only test panels (`?dev=gemma`); the import is dropped from production.
+// Dev-only panels (`?dev=gemma`, `?dev=setup`); dropped from production.
 const GemmaTest = import.meta.env.DEV ? lazy(() => import('./dev/GemmaTest')) : null
+const SetupPreview = import.meta.env.DEV ? lazy(() => import('./dev/SetupPreview')) : null
 const devPanel = import.meta.env.DEV ? new URLSearchParams(location.search).get('dev') : null
 
 function App() {
@@ -19,12 +20,13 @@ function App() {
   const [load, dispatchLoad] = useReducer(loadReducer, {})
   const device = useDeviceCheck()
 
-  if (GemmaTest && devPanel === 'gemma') {
+  const DevPanel = devPanel === 'gemma' ? GemmaTest : devPanel === 'setup' ? SetupPreview : null
+  if (DevPanel) {
     return (
       <div className="app">
         <main>
           <Suspense fallback={null}>
-            <GemmaTest />
+            <DevPanel />
           </Suspense>
         </main>
       </div>
@@ -41,8 +43,10 @@ function App() {
           <Setup
             mode={state.mode}
             display={state.display}
+            settings={state.settings}
             load={load}
-            onChooseDisplay={(display) => dispatch({ type: 'chooseDisplay', display })}
+            onChooseDisplay={(display, interviewer) => dispatch({ type: 'chooseDisplay', display, interviewer })}
+            onSettingsChange={(patch) => dispatch({ type: 'updateSettings', patch })}
             onStart={() => {
               // Opened inside the click: the browser needs a user gesture for
               // the microphone and for audio playback.
@@ -55,6 +59,7 @@ function App() {
         {state.screen === 'interview' && state.display && (
           <Interview
             display={state.display}
+            settings={state.settings}
             onEnd={() => dispatch({ type: 'finishInterview' })}
           />
         )}
@@ -68,10 +73,11 @@ function App() {
 
       {/* Same position in the tree on setup and interview, so changing screen
           never remounts the engine (and never kills its workers). */}
-      {isEngineMounted(state) && (
-        <EngineHost
+      {isVoiceMounted(state) && (
+        <VoiceHost
           display={state.display}
           mode={state.mode}
+          interviewer={state.settings.interviewer}
           visible={state.screen === 'interview'}
           onLoad={dispatchLoad}
         />

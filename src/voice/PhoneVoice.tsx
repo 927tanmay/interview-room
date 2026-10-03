@@ -1,21 +1,22 @@
 import { useEffect, type Dispatch } from 'react'
 import { useAiVoiceAvatar } from 'react-ai-voice-avatar/headless'
 import type { LoadAction, LoadItemId } from './loading'
-import { registerVoiceControls, setVoice } from './voiceStore'
-import { onTranscript, type EngineProps } from './engineEvents'
+import { registerVoiceControls, setAudioLevel, setVoice } from './voiceStore'
+import { onTranscript, type VoiceProps } from './voiceEvents'
 
 // The package's progress labels for the models we show.
 const LABELS: Record<string, LoadItemId> = { asr: 'whisper', kokoro: 'kokoro' }
 
 // Phone screen: the package's headless hook runs hearing and voice, no
 // three.js. `onSubmit` is supplied, so the package never downloads its own
-// language model; replies come from the app's Gemma through EngineHost.
+// language model; replies come from the app's Gemma through VoiceHost.
 // Listening starts from the Start interview press (a user gesture), after the
 // setup screen has said why the microphone is needed.
-export function PhoneEngine({ onLoad, onSubmit, onInterrupt }: EngineProps & { onLoad: Dispatch<LoadAction> }) {
+export function PhoneVoice({ onLoad, onSubmit, onInterrupt, voice: voiceId }: VoiceProps & { onLoad: Dispatch<LoadAction> }) {
   const voice = useAiVoiceAvatar({
     ttsEngine: 'kokoro',
-    ttsVoice: 'af_heart',
+    ttsVoice: voiceId,
+    onAudioLevelChange: setAudioLevel,
     onSubmit,
     onUserInterrupt: onInterrupt,
     onTranscriptUpdate: onTranscript,

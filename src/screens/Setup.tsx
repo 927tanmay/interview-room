@@ -1,36 +1,69 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Display, Mode } from '../app/state'
+import { ChoiceChips } from '../components/ChoiceChips'
 import { LoadProgress } from '../components/LoadProgress'
+import { MicCheck } from '../components/MicCheck'
 import { ScreenFrame } from '../components/ScreenFrame'
-import { allReady, type LoadState } from '../engine/loading'
+import { allReady, type LoadState } from '../voice/loading'
+import type { Level, Track } from '../interview/bank'
+import type { Mood } from '../interview/lines'
+import {
+  availableCount,
+  FULL_LOOP_COUNT,
+  INTERVIEWERS,
+  type InterviewerId,
+  type InterviewSettings,
+  type RoundChoice,
+} from '../interview/settings'
 
 const DISPLAYS: { value: Display; name: string; detail: string }[] = [
   { value: 'video', name: 'Video interview', detail: 'The interviewer appears on screen and lip-syncs.' },
   { value: 'phone', name: 'Phone screen', detail: 'Voice only, like a recruiter call. Lighter on the laptop.' },
 ]
 
-// Placeholder (step 0.2). The first choice is video or phone: confirming it
-// mounts the engine, which starts loading the models while the candidate fills
-// in the rest (UX.md: downloads). Steps 1.6, 2.4 and 4.1 fill in the sections.
+const MOOD_DETAIL: Record<Mood, string> = {
+  friendly: 'Warm and encouraging, like a good first-round interviewer.',
+  neutral: 'Calm and professional, no small reassurances.',
+  tough: 'Direct and sceptical, like a demanding hiring manager.',
+}
+
+const ROUND_DETAIL: Record<RoundChoice, string> = {
+  full: `${FULL_LOOP_COUNT} questions: 2 behavioural, 2 technical, 1 HR.`,
+  behavioural: 'Stories from your experience: what you did and how it turned out.',
+  technical: 'Questions on your track, answered out loud.',
+  hr: 'Motivation, strengths and how you like to work.',
+}
+
+// Setup (TASKS.md 4.1). First step: video or phone, and who interviews you;
+// confirming it starts loading the models (the avatar and voice depend on the
+// interviewer, so both are fixed from then on). The rest is filled in while
+// the models load (UX.md: downloads).
 export function Setup({
   mode,
   display,
+  settings,
   load,
   onChooseDisplay,
+  onSettingsChange,
   onStart,
   onBack,
 }: {
   mode: Mode
   display: Display | null
+  settings: InterviewSettings
   load: LoadState
-  onChooseDisplay: (display: Display) => void
+  onChooseDisplay: (display: Display, interviewer: InterviewerId) => void
+  onSettingsChange: (patch: Partial<InterviewSettings>) => void
   onStart: () => void
   onBack: () => void
 }) {
-  // Video is preselected; nothing loads until they press Continue.
-  const [pending, setPending] = useState<Display>('video')
+  // Video and Ananya are preselected; nothing loads until Continue.
+  const [pendingDisplay, setPendingDisplay] = useState<Display>('video')
+  const [pendingInterviewer, setPendingInterviewer] = useState<InterviewerId>(settings.interviewer)
   const chosen = DISPLAYS.find((d) => d.value === display)
   const ready = !!chosen && allReady(load)
+  const speechReady = load.whisper?.phase === 'ready' && load.kokoro?.phase === 'ready'
+  const interviewer = INTERVIEWERS[settings.interviewer].name
 
   // The form disappears on Continue; keep keyboard focus on what replaced it.
   const chosenRef = useRef<HTMLHeadingElement>(null)
@@ -38,12 +71,15 @@ export function Setup({
     if (display) chosenRef.current?.focus()
   }, [display])
 
+  const set = (patch: Partial<InterviewSettings>) => onSettingsChange(patch)
+  const countMax = settings.round === 'full' ? FULL_LOOP_COUNT : Math.min(5, availableCount(settings.round, settings.track, settings.level))
+
   return (
     <ScreenFrame title="Set up your interview">
       {chosen ? (
         <section aria-labelledby="display-title" className="panel">
           <h2 id="display-title" ref={chosenRef} tabIndex={-1}>
-            {chosen.name}
+            {chosen.name} with {interviewer}
           </h2>
           <p className="muted">
             {chosen.detail} To change this, go back to the home page.
@@ -51,10 +87,10 @@ export function Setup({
         </section>
       ) : (
         <form
-          className="panel"
+          className="panel step-form"
           onSubmit={(e) => {
             e.preventDefault()
-            onChooseDisplay(pending)
+            onChooseDisplay(pendingDisplay, pendingInterviewer)
           }}
         >
           <fieldset className="choice-group">
@@ -64,9 +100,10 @@ export function Setup({
                 <input
                   type="radio"
                   name="display"
+                  id={`display-${d.value}`}
                   value={d.value}
-                  checked={pending === d.value}
-                  onChange={() => setPending(d.value)}
+                  checked={pendingDisplay === d.value}
+                  onChange={() => setPendingDisplay(d.value)}
                 />
                 <span>
                   <span className="choice-name">{d.name}</span>
@@ -75,9 +112,19 @@ export function Setup({
               </label>
             ))}
           </fieldset>
+          <ChoiceChips<InterviewerId>
+            name="interviewer"
+            legend="Who interviews you?"
+            options={[
+              { value: 'ananya', label: 'Ananya' },
+              { value: 'aarav', label: 'Aarav' },
+            ]}
+            value={pendingInterviewer}
+            onChange={setPendingInterviewer}
+          />
           <p className="muted">
-            Continuing starts the download for {mode === 'heavy' ? 'Heavy' : 'Light'} mode.
-            You can't switch between video and phone after that.
+            Continuing starts the download for {mode === 'heavy' ? 'Heavy' : 'Light'} mode. These two
+            choices stay fixed after that.
           </p>
           <div className="actions">
             <button type="submit" className="primary">
@@ -94,21 +141,91 @@ export function Setup({
             <LoadProgress mode={mode} state={load} />
           </section>
 
-          <section aria-labelledby="options-title" className="panel">
-            <h2 id="options-title">Interview</h2>
-            <p className="placeholder">
-              Track, round, level, interviewer, mood, number of questions and answer length go
-              here (step 4.1).
-            </p>
+          <section aria-labelledby="options-title" className="panel options">
+            <h2 id="options-title">Your interview</h2>
+            <p className="muted">Fill this in while the models load.</p>
+
+            <ChoiceChips<Track>
+              name="track"
+              legend="Track"
+              options={[
+                { value: 'frontend', label: 'Frontend' },
+                { value: 'backend', label: 'Backend' },
+                { value: 'ml', label: 'Machine learning' },
+              ]}
+              value={settings.track}
+              onChange={(track) => set({ track })}
+            />
+            <ChoiceChips<Level>
+              name="level"
+              legend="Level"
+              options={[
+                { value: 'intern', label: 'Intern' },
+                { value: 'junior', label: 'Junior' },
+                { value: 'mid', label: 'Mid-level' },
+                { value: 'senior', label: 'Senior' },
+              ]}
+              value={settings.level}
+              onChange={(level) => set({ level })}
+            />
+            <ChoiceChips<RoundChoice>
+              name="round"
+              legend="Round"
+              options={[
+                { value: 'full', label: 'Full loop' },
+                { value: 'behavioural', label: 'Behavioural' },
+                { value: 'technical', label: 'Technical' },
+                { value: 'hr', label: 'HR' },
+              ]}
+              value={settings.round}
+              onChange={(round) => set({ round })}
+              hint={ROUND_DETAIL[settings.round]}
+            />
+            {settings.round !== 'full' && (
+              <ChoiceChips<number>
+                name="count"
+                legend="Questions"
+                options={[3, 4, 5].map((n) => ({ value: n, label: String(n), disabled: n > countMax }))}
+                value={settings.count}
+                onChange={(count) => set({ count })}
+              />
+            )}
+            <ChoiceChips<number>
+              name="answer-length"
+              legend="Target length per answer"
+              options={[1, 2, 3].map((n) => ({ value: n, label: `${n} min` }))}
+              value={settings.answerMinutes}
+              onChange={(answerMinutes) => set({ answerMinutes })}
+              hint="Most behavioural answers aim for about 2 minutes. The timer turns amber near it and red past it."
+            />
+            <ChoiceChips<Mood>
+              name="mood"
+              legend="Interviewer's manner"
+              options={[
+                { value: 'friendly', label: 'Friendly' },
+                { value: 'neutral', label: 'Neutral' },
+                { value: 'tough', label: 'Tough' },
+              ]}
+              value={settings.mood}
+              onChange={(mood) => set({ mood })}
+              hint={MOOD_DETAIL[settings.mood]}
+            />
+            <div className="text-field">
+              <label htmlFor="candidate-name">What should {interviewer} call you? (optional)</label>
+              <input
+                id="candidate-name"
+                type="text"
+                autoComplete="given-name"
+                maxLength={40}
+                value={settings.candidateName}
+                onChange={(e) => set({ candidateName: e.target.value })}
+              />
+            </div>
           </section>
 
           <section aria-labelledby="mic-title" className="panel">
             <h2 id="mic-title">Microphone</h2>
-            <p>
-              The interviewer needs to hear your answers. Your voice is turned into text on this
-              device and is never sent anywhere.
-            </p>
-            <p className="placeholder">Mic check goes here (step 2.4).</p>
+            <MicCheck interviewer={interviewer} ready={speechReady} />
           </section>
         </>
       )}

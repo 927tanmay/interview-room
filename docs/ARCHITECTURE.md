@@ -1,7 +1,7 @@
 # Interview Room: architecture
 
 How the app is put together, checked against the code on 4 Oct 2026 (after
-step 3.6). Each box names the file that does it. See [PLAN.md](PLAN.md) for
+step 4.1). Each box names the file that does it. See [PLAN.md](PLAN.md) for
 what we are building and [TASKS.md](TASKS.md) for the order.
 
 ## 1. The pieces
@@ -18,9 +18,9 @@ flowchart TB
     Engine["interview/engine.ts<br/>turns, timers, recovery<br/>(plain code, no React)"]
     Rules["angles.ts · intents.ts · guard.ts<br/>prompts.ts · lines.ts · bank.ts"]
     Writer["interview/writer.ts<br/>Gemma wording, 6 s limit"]
-    Host["engine/EngineHost.tsx<br/>mounted once: setup → end of interview"]
-    Voice["engine/PhoneEngine (headless hook)<br/>or VideoEngine (&lt;AiVoiceAvatar&gt;, lazy)"]
-    Store["engine/voiceStore.ts<br/>status, mic error, controls"]
+    Host["voice/VoiceHost.tsx<br/>mounted once: setup → end of interview"]
+    Voice["voice/PhoneVoice (headless hook)<br/>or VideoVoice (&lt;AiVoiceAvatar&gt;, lazy)"]
+    Store["voice/voiceStore.ts<br/>status, mic error, controls"]
     VAD["Silero VAD + mic<br/>(react-ai-voice-avatar)"]
   end
 
@@ -100,8 +100,8 @@ answer.
 | Thing | Created | Ends | Why |
 |---|---|---|---|
 | Device check | App opens | never | Home screen needs it first |
-| `EngineHost`, package workers, Gemma worker | Continue on the setup screen (video/phone picked) | Interview ends, or back to home | Workers die on unmount, so it is mounted once and screens change around it |
-| Avatar canvas | With `VideoEngine` | With it | Kept off stage at a real size on setup so react-three-fiber mounts it |
+| `VoiceHost`, package workers, Gemma worker | Continue on the setup screen (video/phone picked) | Interview ends, or back to home | Workers die on unmount, so it is mounted once and screens change around it |
+| Avatar canvas | With `VideoVoice` | With it | Kept off stage at a real size on setup so react-three-fiber mounts it |
 | Interview engine | Interview screen opens | Next interview starts | Its last snapshot is what the report reads |
 | Model files | First download | Browser storage cleared | OPFS, one file at a time, marker written only when complete |
 
@@ -123,17 +123,15 @@ Checked against the import graph and the code:
 
 To fix:
 
-1. **Naming clash.** `src/engine/` is the voice engine, `src/interview/engine.ts`
-   is the interview engine. Rename `src/engine/` to `src/voice/`
-   (`VoiceHost`, `PhoneVoice`, `VideoVoice`). Mechanical, no behaviour change.
-2. **Gemma ends with the interview.** `EngineHost` unmounts on the report
-   screen and disposes the Gemma worker, but the Heavy deep review (phase H)
-   needs Gemma on the report screen. Before phase H: keep the Gemma worker
-   alive through the report (move its owner up to `App`, for the setup to
-   report lifetime), while the voice engine still unmounts.
-3. **Dead state.** `voiceStore` still keeps `said` and `heard` captions
-   (written by `engineEvents.ts`), but the interview screen now shows the
-   engine's own `interviewerLine` and `currentAnswer`. Remove them.
+1. **Naming clash.** Done: the voice engine moved from `src/engine/` to
+   `src/voice/` (`VoiceHost`, `PhoneVoice`, `VideoVoice`, `voiceEvents`), so
+   "engine" now only means the interview engine.
+2. **Gemma ends with the interview.** `VoiceHost` unmounts on the report
+   screen and disposes the Gemma worker, so nothing can use Gemma there.
+   Left as it is for now: Tanmay is planning a different architecture for the
+   deep review (phase H) and will decide then.
+3. **Dead state.** Done: the voice store no longer keeps the interviewer's
+   sentences; it keeps `heard` only, which the mic check shows.
 4. **Two copies of the voice engine.** Video runs `<AiVoiceAvatar>`'s own
    hook, phone runs the headless hook (the agreed workaround; an
    `AiVoiceAvatarView` export in the package after the challenge).

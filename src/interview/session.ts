@@ -1,14 +1,14 @@
 import { useSyncExternalStore } from 'react'
-import { onVoiceChange, voiceControls } from '../engine/voiceStore'
+import { onVoiceChange, voiceControls } from '../voice/voiceStore'
 import type { GemmaClient } from '../gemma/GemmaClient'
-import { pickQuestions, type Level, type Round, type Track } from './bank'
+import { pickQuestions } from './bank'
 import { InterviewEngine, type EngineSnapshot } from './engine'
-import type { Mood } from './lines'
+import { FULL_LOOP_COUNT, INTERVIEWERS, type InterviewSettings } from './settings'
 import { makeWriter } from './writer'
 
 // One interview at a time: connects the engine to the voice (speak, and
 // knowing when the candidate starts talking again), to the app's Gemma (which
-// EngineHost owns and attaches here), and to the screens (a snapshot store).
+// VoiceHost owns and attaches here), and to the screens (a snapshot store).
 
 let gemma: GemmaClient | null = null
 let engine: InterviewEngine | null = null
@@ -20,29 +20,21 @@ export function attachGemma(client: GemmaClient | null) {
   gemma = client
 }
 
-export type InterviewSettings = {
-  round: Round | 'full'
-  track: Track
-  level: Level
-  count: number
-  interviewer: string
-  mood: Mood
-  candidateName?: string
-}
-
-// Until the setup page has its options (step 4.1): a full loop for a junior
-// frontend developer, friendly mood. Dev builds can try another round with
-// `?round=behavioural|technical|hr`.
-export function defaultSettings(): InterviewSettings {
-  const devRound = import.meta.env.DEV ? new URLSearchParams(location.search).get('round') : null
-  const round = devRound === 'behavioural' || devRound === 'technical' || devRound === 'hr' ? devRound : 'full'
-  return { round, track: 'frontend', level: 'junior', count: 3, interviewer: 'Ananya', mood: 'friendly' }
-}
-
 export function startInterview(settings: InterviewSettings) {
   stopInterview()
-  const questions = pickQuestions(settings)
-  const persona = { interviewer: settings.interviewer, mood: settings.mood, track: settings.track, level: settings.level, candidateName: settings.candidateName }
+  const questions = pickQuestions({
+    round: settings.round,
+    track: settings.track,
+    level: settings.level,
+    count: settings.round === 'full' ? FULL_LOOP_COUNT : settings.count,
+  })
+  const persona = {
+    interviewer: INTERVIEWERS[settings.interviewer].name,
+    mood: settings.mood,
+    track: settings.track,
+    level: settings.level,
+    candidateName: settings.candidateName.trim() || undefined,
+  }
   engine = new InterviewEngine(
     { questions, ...persona },
     {

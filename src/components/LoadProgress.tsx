@@ -1,6 +1,6 @@
 import { DOWNLOADS, formatBytes } from '../app/downloads'
 import type { Mode } from '../app/state'
-import type { LoadItem, LoadItemId, LoadState } from '../engine/loading'
+import type { LoadItem, LoadItemId, LoadState } from '../voice/loading'
 
 function downloadFor(id: LoadItemId, mode: Mode) {
   const key = id === 'gemma' ? (mode === 'heavy' ? 'gemma-heavy' : 'gemma-light') : id

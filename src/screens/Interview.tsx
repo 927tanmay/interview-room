@@ -1,9 +1,10 @@
 import { useEffect, useRef } from 'react'
 import type { Display } from '../app/state'
 import { ScreenFrame } from '../components/ScreenFrame'
-import { useVoice, type VoiceStatus } from '../engine/voiceStore'
+import { useVoice, type VoiceStatus } from '../voice/voiceStore'
 import type { PauseReason } from '../interview/engine'
-import { defaultSettings, interview, startInterview, useInterview } from '../interview/session'
+import { interview, startInterview, useInterview } from '../interview/session'
+import type { InterviewSettings } from '../interview/settings'
 
 // One clear state, in words (UX.md: interview screen). 'idle' means the mic is
 // open and waiting for speech, which to the candidate is listening too.
@@ -25,7 +26,15 @@ const PAUSED: Record<PauseReason, string> = {
 // The interview runs here; the avatar or voice-only stage belongs to the
 // engine, which App keeps mounted beside this screen. Step 4.2 adds the timer
 // and progress dots.
-export function Interview({ display, onEnd }: { display: Display; onEnd: () => void }) {
+export function Interview({
+  display,
+  settings,
+  onEnd,
+}: {
+  display: Display
+  settings: InterviewSettings
+  onEnd: () => void
+}) {
   const voice = useVoice()
   const state = useInterview()
   const started = useRef(false)
@@ -33,8 +42,8 @@ export function Interview({ display, onEnd }: { display: Display; onEnd: () => v
   useEffect(() => {
     if (started.current) return
     started.current = true
-    startInterview(defaultSettings())
-  }, [])
+    startInterview(settings)
+  }, [settings])
 
   const finished = state?.phase === 'done'
   // The engine is busy while Gemma words a follow-up; the package is idle then.

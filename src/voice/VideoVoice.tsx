@@ -2,24 +2,26 @@ import { Canvas } from '@react-three/fiber'
 import { useCallback, useEffect, useRef, type Dispatch } from 'react'
 import { AiVoiceAvatar, type AiVoiceAvatarHandle } from 'react-ai-voice-avatar'
 import { usePrefersReducedMotion } from '../app/usePrefersReducedMotion'
-import { onTranscript, type EngineProps } from './engineEvents'
+import { onTranscript, type VoiceProps } from './voiceEvents'
 import type { LoadAction, LoadItemId } from './loading'
-import { registerVoiceControls, setVoice } from './voiceStore'
+import { registerVoiceControls, setAudioLevel, setVoice } from './voiceStore'
 
 const LABELS: Record<string, LoadItemId> = { asr: 'whisper', kokoro: 'kokoro' }
 
 // Video interview: <AiVoiceAvatar> runs hearing, voice and lip sync and draws
 // the avatar. It runs its own copy of the package's hook, so it gets the same
-// config as PhoneEngine (TASKS.md: the Video vs Phone workaround). Default
+// config as PhoneVoice (TASKS.md: the Video vs Phone workaround). Default
 // export for React.lazy, so three.js only loads for a video interview.
 // The app draws its own state, question and captions, so the package's pill
 // and captions are off. Reduced motion: no gestures (lip sync stays).
-export default function VideoEngine({
+export default function VideoVoice({
   onLoad,
   visible,
   onSubmit,
   onInterrupt,
-}: EngineProps & { onLoad: Dispatch<LoadAction>; visible: boolean }) {
+  voice,
+  avatar: avatarPreset,
+}: VoiceProps & { onLoad: Dispatch<LoadAction>; visible: boolean; avatar: 'ananya' | 'aarav' }) {
   const reducedMotion = usePrefersReducedMotion()
   const avatar = useRef<AiVoiceAvatarHandle>(null)
 
@@ -55,10 +57,11 @@ export default function VideoEngine({
       >
         <AiVoiceAvatar
           ref={avatar}
-          avatarPreset="ananya"
+          avatarPreset={avatarPreset}
           lightingPreset="studio"
           ttsEngine="kokoro"
-          ttsVoice="af_heart"
+          ttsVoice={voice}
+          onAudioLevelChange={setAudioLevel}
           onSubmit={onSubmit}
           onUserInterrupt={onInterrupt}
           onTranscriptUpdate={onTranscript}

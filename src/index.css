@@ -103,14 +103,14 @@ footer {
   }
 }
 
-.engine-host {
+.voice-host {
   grid-area: stage;
   min-width: 0;
 }
 
 /* Hidden on the setup screen while the models load, but kept at a real size
    so the avatar's canvas mounts. */
-.engine-host--offstage {
+.voice-host--offstage {
   position: fixed;
   left: -10000px;
   top: 0;
@@ -365,6 +365,150 @@ input[type='radio'] {
 .downloads tfoot td {
   font-weight: 600;
   color: var(--text);
+}
+
+/* Setup: interview options */
+
+.step-form,
+.options {
+  display: grid;
+  gap: 18px;
+}
+
+.options > h2,
+.options > .muted {
+  margin: 0;
+}
+
+.options > .muted {
+  margin-top: -12px;
+}
+
+.chip-field {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.chip-field legend {
+  float: left;
+  width: 100%;
+  font-size: 0.95rem;
+  margin-bottom: 8px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  position: relative;
+  cursor: pointer;
+}
+
+/* The radio stays in the page for keyboard and screen readers; the chip is
+   its visible face. */
+.chip input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  margin: 0;
+  cursor: inherit;
+}
+
+.chip span {
+  display: inline-block;
+  padding: 7px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  transition:
+    background-color var(--ease),
+    border-color var(--ease);
+}
+
+.chip:hover span {
+  background: var(--surface-hover);
+}
+
+.chip input:checked + span {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+.chip input:focus-visible + span {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.chip-disabled {
+  cursor: not-allowed;
+}
+
+.chip-disabled span {
+  border-style: dashed;
+  color: var(--muted);
+}
+
+.chip-hint {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.text-field {
+  display: grid;
+  gap: 8px;
+  font-size: 0.95rem;
+}
+
+.text-field input {
+  font: inherit;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  max-width: 320px;
+}
+
+/* Setup: mic check */
+
+.mic-check {
+  display: grid;
+  gap: 12px;
+}
+
+.mic-live {
+  display: grid;
+  gap: 8px;
+}
+
+.meter {
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-hover);
+  overflow: hidden;
+  max-width: 320px;
+}
+
+.meter span {
+  display: block;
+  height: 100%;
+  width: calc(var(--level, 0) * 100%);
+  background: var(--accent);
+  border-radius: var(--radius-pill);
+}
+
+.mic-actions {
+  justify-content: flex-start;
+  margin-top: 0;
 }
 
 /* Setup: model loading progress */

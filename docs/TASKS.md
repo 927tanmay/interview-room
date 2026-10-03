@@ -30,7 +30,7 @@ code:
   screen runs the headless hook, Video runs `<AiVoiceAvatar>`, both fed the
   same interview logic. The choice is the first thing on the setup screen,
   loading starts once it is picked, and it cannot change after that. App
-  mounts the engine once (`EngineHost`) and keeps it mounted from that choice
+  mounts the engine once (`VoiceHost`) and keeps it mounted from that choice
   to the end of the interview; screens change around it. An
   `AiVoiceAvatarView` export is for after the challenge.
 - **Model caching (checked in 0.7.0):** both package workers (Whisper in the
@@ -54,7 +54,7 @@ code:
   setup, interview, report) and a small app state to move between them. Dev
   server with the cross-origin isolation headers (COOP/COEP) that
   multithreaded WASM needs, so dev matches Render. Setup starts with Video
-  interview (default) or Phone screen; `EngineHost` is mounted once from that
+  interview (default) or Phone screen; `VoiceHost` is mounted once from that
   choice to the end of the interview; the video engine is lazy-loaded. Glass
   design per UX.md.
   Check: `npm run dev`, click through the empty screens, `npm run build` and
@@ -81,7 +81,7 @@ code:
   Checked with Light: all 6 files kept (880 MB), reload loads in 2.9 s instead
   of 270 s. Heavy in phase H.
 - [x] **1.6 Download progress.** Done for Light + phone (`LoadProgress`,
-  `src/engine/loading.ts`): real progress per model, "Loading from this
+  `src/voice/loading.ts`): real progress per model, "Loading from this
   device" when the weights are already in OPFS, Start enabled when all are
   ready. Everything cached: Continue to ready in 3.7 s. Avatar row: with the
   video engine in 2.1. Note: transformers.js reports progress for
@@ -95,10 +95,10 @@ code:
 
 ## Phase 2: Voice pipeline (Sat)
 
-- [x] **2.1 Wire the hook.** In `EngineHost`: `PhoneEngine` runs the headless
-  hook, `VideoEngine` (lazy) runs `<AiVoiceAvatar>` (Ananya, Kokoro fp32);
+- [x] **2.1 Wire the hook.** In `VoiceHost`: `PhoneVoice` runs the headless
+  hook, `VideoVoice` (lazy) runs `<AiVoiceAvatar>` (Ananya, Kokoro fp32);
   both take the same `onSubmit` (the app's Gemma, streamed) and publish the
-  same state and controls through `src/engine/voiceStore.ts`. The engine is
+  same state and controls through `src/voice/voiceStore.ts`. The engine is
   not remounted between setup and interview. A placeholder interviewer
   (`src/interview/placeholderBrain.ts`) answers until phase 3. Tested by
   Tanmay in Chrome, phone and video: spoken loop, barge-in, lip sync.
@@ -112,7 +112,7 @@ code:
   (collecting an answer across pauses).
 - [x] **2.3 Check: answers over 30 s come back whole** (fixed in 0.7.0).
   Tested by Tanmay in Chrome.
-- [ ] **2.4 Mic check.** Folded into 4.1 (setup page): explain why, then a
+- [x] **2.4 Mic check.** Folded into 4.1 (setup page): explain why, then a
   level meter, a test sentence, see the transcript, hear the voice. Handles a
   denied or lost microphone.
 
@@ -165,10 +165,16 @@ code:
 
 ## Phase 4: Setup and interview room (Sat afternoon)
 
-- [ ] **4.1 Setup page.** Track, round (behavioural, technical, system design
-  for junior and up, HR, or full loop), level, interviewer,
-  mood, question source (built-in bank for now), number of questions, target
-  answer length.
+- [x] **4.1 Setup page.** First step: video or phone, and the interviewer
+  (Ananya: `ananya` avatar, Kokoro `af_heart`; Aarav: `aarav`, `am_michael`),
+  fixed once Continue starts loading. While loading: track, level, round
+  (full loop, behavioural, technical, HR; system design parked), number of
+  questions (capped by what the bank has), target answer length (1-3 min),
+  mood, optional name for the greeting. Mic check: why it is needed, then a
+  level meter, what Whisper heard, and the interviewer's voice. Settings live
+  in `src/interview/settings.ts` and reach the engine through the session.
+  Dev preview without downloads: `?dev=setup`. Still to try in Chrome: the
+  real flow with Aarav and a single round.
 - [ ] **4.2 Interview room.** Avatar, question card, live captions, answer
   timer (amber, then red past the target), progress dots, I'm done / Pause /
   Skip / End.

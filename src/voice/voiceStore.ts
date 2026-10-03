@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react'
 
-// The voice engine lives in EngineHost, beside the screens rather than inside
+// The voice engine lives in VoiceHost, beside the screens rather than inside
 // them, so its state and controls reach the screens through this small store.
 // Both engines (headless hook, <AiVoiceAvatar>) publish the same shape.
 
@@ -8,9 +8,8 @@ export type VoiceStatus = 'loading' | 'idle' | 'listening' | 'thinking' | 'speak
 
 export type VoiceState = {
   status: VoiceStatus
-  // Last thing Whisper heard, and what the interviewer is saying this turn.
+  // Last thing Whisper heard (for the mic check).
   heard: string
-  said: string
   micError: string | null
 }
 
@@ -21,7 +20,7 @@ export type VoiceControls = {
   speak: (text: string) => void
 }
 
-const initial: VoiceState = { status: 'loading', heard: '', said: '', micError: null }
+const initial: VoiceState = { status: 'loading', heard: '', micError: null }
 let state = initial
 let controls: VoiceControls | null = null
 const listeners = new Set<() => void>()
@@ -47,6 +46,19 @@ export function voiceControls(): VoiceControls | null {
 function subscribe(listener: () => void) {
   listeners.add(listener)
   return () => listeners.delete(listener)
+}
+
+// Loudness, once per frame from the package, kept out of React state: the mic
+// meter (and later the phone-screen orb) read it in their own animation loop.
+export type AudioLevel = { level: number; source: 'mic' | 'tts' | 'idle' }
+let audioLevel: AudioLevel = { level: 0, source: 'idle' }
+
+export function setAudioLevel(level: number, source: AudioLevel['source']) {
+  audioLevel = { level, source }
+}
+
+export function getAudioLevel(): AudioLevel {
+  return audioLevel
 }
 
 // For code outside React (the interview session): called on every change.
