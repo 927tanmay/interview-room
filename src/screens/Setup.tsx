@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import { ScreenFrame } from '../components/ScreenFrame'
 import type { Display, Mode } from '../app/state'
+import { LoadProgress } from '../components/LoadProgress'
+import { ScreenFrame } from '../components/ScreenFrame'
+import { allReady, type LoadState } from '../engine/loading'
 
 const DISPLAYS: { value: Display; name: string; detail: string }[] = [
   { value: 'video', name: 'Video interview', detail: 'The interviewer appears on screen and lip-syncs.' },
@@ -13,12 +15,14 @@ const DISPLAYS: { value: Display; name: string; detail: string }[] = [
 export function Setup({
   mode,
   display,
+  load,
   onChooseDisplay,
   onStart,
   onBack,
 }: {
   mode: Mode
   display: Display | null
+  load: LoadState
   onChooseDisplay: (display: Display) => void
   onStart: () => void
   onBack: () => void
@@ -26,6 +30,7 @@ export function Setup({
   // Video is preselected; nothing loads until they press Continue.
   const [pending, setPending] = useState<Display>('video')
   const chosen = DISPLAYS.find((d) => d.value === display)
+  const ready = !!chosen && allReady(load)
 
   // The form disappears on Continue; keep keyboard focus on what replaced it.
   const chosenRef = useRef<HTMLHeadingElement>(null)
@@ -85,8 +90,8 @@ export function Setup({
       {chosen && (
         <>
           <section aria-labelledby="download-title" className="panel">
-            <h2 id="download-title">Downloading ({mode === 'heavy' ? 'Heavy' : 'Light'} mode)</h2>
-            <p className="placeholder">Real progress per model goes here (step 1.6).</p>
+            <h2 id="download-title">Models ({mode === 'heavy' ? 'Heavy' : 'Light'} mode)</h2>
+            <LoadProgress mode={mode} state={load} />
           </section>
 
           <section aria-labelledby="options-title" className="panel">
@@ -112,10 +117,21 @@ export function Setup({
         <button type="button" onClick={onBack}>
           Back
         </button>
-        <button type="button" className="primary" onClick={onStart} disabled={!chosen}>
+        <button
+          type="button"
+          className="primary"
+          onClick={onStart}
+          disabled={!ready}
+          aria-describedby={chosen && !ready ? 'start-hint' : undefined}
+        >
           Start interview
         </button>
       </div>
+      {chosen && !ready && (
+        <p id="start-hint" className="muted start-hint">
+          Start is available once every model has loaded.
+        </p>
+      )}
     </ScreenFrame>
   )
 }

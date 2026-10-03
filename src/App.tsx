@@ -3,6 +3,7 @@ import { appReducer, initialState, isEngineMounted } from './app/state'
 import { useDeviceCheck } from './app/useDeviceCheck'
 import { PrivacyNote } from './components/PrivacyNote'
 import { EngineHost } from './engine/EngineHost'
+import { loadReducer } from './engine/loading'
 import { Home } from './screens/Home'
 import { Interview } from './screens/Interview'
 import { Report } from './screens/Report'
@@ -14,6 +15,7 @@ const devPanel = import.meta.env.DEV ? new URLSearchParams(location.search).get(
 
 function App() {
   const [state, dispatch] = useReducer(appReducer, initialState)
+  const [load, dispatchLoad] = useReducer(loadReducer, {})
   const device = useDeviceCheck()
 
   if (GemmaTest && devPanel === 'gemma') {
@@ -38,6 +40,7 @@ function App() {
           <Setup
             mode={state.mode}
             display={state.display}
+            load={load}
             onChooseDisplay={(display) => dispatch({ type: 'chooseDisplay', display })}
             onStart={() => dispatch({ type: 'startInterview' })}
             onBack={() => dispatch({ type: 'goHome' })}
@@ -64,6 +67,7 @@ function App() {
           display={state.display}
           mode={state.mode}
           visible={state.screen === 'interview'}
+          onLoad={dispatchLoad}
         />
       )}
 

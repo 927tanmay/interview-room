@@ -25,3 +25,5 @@ export type GemmaEvent =
   // A model file could not be kept for next time. Gemma still loads; it will
   // just download again on the next visit.
   | { type: 'storage'; message: string }
+  // Dev only: diagnostics, logged to the page console.
+  | { type: 'debug'; message: string }

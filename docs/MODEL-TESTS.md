@@ -218,6 +218,13 @@ The cached model gave the same greedy reply word for word as the downloaded
 one. transformers.js reports progress for cache reads as well, so the
 progress screen has to tell a cache read from a download.
 
+With the setup screen wired (step 1.6), Light + phone screen with
+everything already on the device goes from Continue to all models ready in
+**3.7 s** (Whisper, Kokoro and Gemma loading in parallel). Whisper is kept as
+`encoder_model.onnx` (82 MB) and `decoder_model_merged.onnx` (209 MB), Kokoro
+as `model.onnx` (326 MB). transformers.js also keeps the Gemma worker's ONNX
+runtime in the same OPFS store (`useWasmCache`).
+
 This browser pane gave the origin a storage quota of 2.6 GB: enough for
 Light, not for Heavy's 3.13 GB. Desktop Chrome normally allows much more,
 but Heavy needs a quota check before downloading (TASKS.md, H.1).

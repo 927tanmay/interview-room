@@ -16,10 +16,35 @@ const post = (event: GemmaEvent) => self.postMessage(event)
 // again on every visit. The package's OPFS store has no such limit; a file is
 // only reused once fully written (MODEL-TESTS.md: caching note).
 if (isModelCacheSupported()) {
-  env.useCustomCache = true
-  env.customCache = createModelCache({
+  const cache = createModelCache({
     onStoreFailed: (key, reason) => post({ type: 'storage', message: `${key}: ${reason}` }),
   })
+  env.useCustomCache = true
+  env.customCache = import.meta.env.DEV ? logged(cache) : cache
+}
+
+// Dev only: every cache call, so cache behaviour can be seen in the console.
+function logged(cache: ReturnType<typeof createModelCache>): ReturnType<typeof createModelCache> {
+  const name = (key: string) => key.split('/').slice(-2).join('/')
+  const log = (msg: string) => post({ type: 'debug', message: `[Gemma cache] ${msg}` })
+  return {
+    async match(key) {
+      const t0 = performance.now()
+      const res = await cache.match(key)
+      log(`match ${name(key)}: ${res ? 'hit' : 'miss'} (${Math.round(performance.now() - t0)} ms)`)
+      return res
+    },
+    async put(key, response) {
+      const t0 = performance.now()
+      log(`put ${name(key)} start`)
+      await cache.put(key, response)
+      log(`put ${name(key)} done (${Math.round(performance.now() - t0)} ms)`)
+    },
+    async delete(key) {
+      log(`delete ${name(key)}`)
+      return cache.delete(key)
+    },
+  }
 }
 
 let generator: TextGenerationPipeline | null = null

@@ -63,6 +63,9 @@ export class GemmaClient {
       case 'progress':
         this.onProgress?.(ev.file, ev.loaded, ev.total)
         break
+      case 'debug':
+        console.debug(ev.message)
+        break
       case 'storage':
         this.onStorageFailed?.(ev.message)
         break

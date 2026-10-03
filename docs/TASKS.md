@@ -80,7 +80,11 @@ code:
   `react-ai-voice-avatar/model-cache`, guarded by `isModelCacheSupported()`.
   Checked with Light: all 6 files kept (880 MB), reload loads in 2.9 s instead
   of 270 s. Heavy in phase H.
-- [ ] **1.6 Download progress.** Note: transformers.js reports progress for
+- [x] **1.6 Download progress.** Done for Light + phone (`LoadProgress`,
+  `src/engine/loading.ts`): real progress per model, "Loading from this
+  device" when the weights are already in OPFS, Start enabled when all are
+  ready. Everything cached: Continue to ready in 3.7 s. Avatar row: with the
+  video engine in 2.1. Note: transformers.js reports progress for
   files read from the OPFS cache too, so a cached model must read "loading
   from this device", not "downloading". The home page lists what will download and
   how big before the candidate chooses; picking video or phone on the setup
@@ -97,7 +101,15 @@ code:
   `VideoEngine` (lazy) runs `<AiVoiceAvatar>`; both take the same config and
   expose the same controls (status, speak, interrupt, start/stop listening)
   to the interview logic. Check that the engine is not remounted between
-  setup and interview (workers keep running). Check that Kokoro loads fp32 (worker log "Initializing Kokoro-82M on
+  setup and interview (workers keep running).
+  Phone part done: `PhoneEngine` runs the headless hook (Kokoro, `onSubmit`
+  returning '' for now) and reports Whisper and Kokoro progress. Video part
+  (`<AiVoiceAvatar>`, avatar progress) still to do.
+  **Watch:** once, the Gemma weights and tokenizer entries vanished from OPFS
+  between two loads, cause not found (transformers.js only deletes through
+  `clear_cache`; the package only clears an entry right before rewriting
+  it). Not reproduced since. Dev builds log every Gemma cache call
+  (`[Gemma cache]` in the console) to catch it if it happens again. Check that Kokoro loads fp32 (worker log "Initializing Kokoro-82M on
   WebGPU (fp32)") and that the package does not fetch its own LLM.
 - [ ] **2.2 Check: empty `onSubmit` reply goes back to listening** (fixed in
   0.7.0). Return `undefined` for a mid-answer pause; the status must leave
