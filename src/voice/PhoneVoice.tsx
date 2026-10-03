@@ -17,6 +17,7 @@ export function PhoneVoice({
   onLoad,
   onSubmit,
   onInterrupt,
+  onSpeechEnd,
   voice: voiceId,
   name,
 }: VoiceProps & { onLoad: Dispatch<LoadAction>; name: string }) {
@@ -26,6 +27,7 @@ export function PhoneVoice({
     onAudioLevelChange: setAudioLevel,
     onSubmit,
     onUserInterrupt: onInterrupt,
+    onInferenceStart: onSpeechEnd,
     onTranscriptUpdate: onTranscript,
     loadingProgress: (pct, label) => {
       const id = LABELS[label]

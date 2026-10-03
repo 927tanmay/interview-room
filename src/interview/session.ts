@@ -85,6 +85,17 @@ export function heard(text: string, speechMs?: number): '' {
   return engine?.heard(text, speechMs) ?? ''
 }
 
+// The voice detector waits this long in silence before closing a stretch of
+// speech (the package's default `redemptionMs`; the app does not change it).
+const DETECTOR_WAIT_MS = 1400
+
+// The voice detector closed a stretch of speech (the package's
+// onInferenceStart, fired before Whisper runs). The candidate stopped talking
+// the detector's wait before now.
+export function speechEnded() {
+  engine?.speechEnded(Date.now() - DETECTOR_WAIT_MS)
+}
+
 export const interview = {
   done: () => engine?.done(),
   repeat: () => engine?.repeat(),

@@ -20,6 +20,7 @@ export default function VideoVoice({
   visible,
   onSubmit,
   onInterrupt,
+  onSpeechEnd,
   voice,
   avatar: avatarPreset,
 }: VoiceProps & { onLoad: Dispatch<LoadAction>; visible: boolean; avatar: 'ananya' | 'aarav' }) {
@@ -66,6 +67,7 @@ export default function VideoVoice({
           onAudioLevelChange={setAudioLevel}
           onSubmit={onSubmit}
           onUserInterrupt={onInterrupt}
+          onInferenceStart={onSpeechEnd}
           onTranscriptUpdate={onTranscript}
           hideStatusPill
           showCaptions={false}

@@ -1,5 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, type Dispatch } from 'react'
-import { attachGemma, heard } from '../interview/session'
+import { attachGemma, heard, speechEnded } from '../interview/session'
 import { INTERVIEWERS, type InterviewerId } from '../interview/settings'
 import { resetVoice } from './voiceStore'
 import { DOWNLOADS } from '../app/downloads'
@@ -92,12 +92,20 @@ export function VoiceHost({
             visible={visible}
             onSubmit={onSubmit}
             onInterrupt={onInterrupt}
+            onSpeechEnd={speechEnded}
             voice={voice}
             avatar={avatar}
           />
         </Suspense>
       ) : (
-        <PhoneVoice onLoad={onLoad} onSubmit={onSubmit} onInterrupt={onInterrupt} voice={voice} name={name} />
+        <PhoneVoice
+          onLoad={onLoad}
+          onSubmit={onSubmit}
+          onInterrupt={onInterrupt}
+          onSpeechEnd={speechEnded}
+          voice={voice}
+          name={name}
+        />
       )}
     </div>
   )

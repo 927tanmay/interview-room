@@ -29,11 +29,25 @@ export type InterviewPlan = {
 
 export type ExchangeKind = 'small-talk' | 'question' | 'follow-up' | 'probe' | 'clarification' | 'candidate-questions'
 
-export type AnswerPart = { text: string; speechMs?: number; at: number }
+// One stretch of speech. `at` is when the transcript arrived (after the voice
+// detector's wait and Whisper). `startedAt` and `endedAt` are when the
+// candidate actually started and stopped talking, from the voice detector;
+// missing for typed input or when the detector's signal did not arrive.
+export type AnswerPart = { text: string; speechMs?: number; at: number; startedAt?: number; endedAt?: number }
 
 // One thing the interviewer said and what the candidate said back. For a
-// follow-up, which angle it probed and whether Gemma worded it.
-export type Exchange = { kind: ExchangeKind; said: string; parts: AnswerPart[]; angle?: Angle; byGemma?: boolean }
+// follow-up, which angle it probed and whether Gemma worded it. `askedEndedAt`
+// is when the interviewer last finished asking it (a repeat or rephrase the
+// candidate asked for moves it; a nudge does not), for time to first word.
+export type Exchange = {
+  kind: ExchangeKind
+  said: string
+  parts: AnswerPart[]
+  askedAt: number
+  askedEndedAt?: number
+  angle?: Angle
+  byGemma?: boolean
+}
 
 // How a question ended when it did not end with an answer.
 export type QuestionOutcome = 'answered' | 'skipped' | 'silent' | 'dont-know'
@@ -127,6 +141,11 @@ export class InterviewEngine {
   private dontKnows = 0
   private gemmaFailures = 0
   private gemmaOff = false
+  // When the last stretch of speech ended, waiting for its transcript.
+  private speechEndedAt: number | null = null
+  // The line being spoken is the question itself (or a repeat the candidate
+  // asked for), so its end starts the clock for time to first word.
+  private askClock = false
   private notes: string[] = []
   private readonly plan: InterviewPlan
   private readonly deps: EngineDeps
@@ -149,6 +168,8 @@ export class InterviewEngine {
   // '' (keep listening); the engine speaks for itself.
   heard(text: string, speechMs?: number): '' {
     const said = text.trim()
+    const endedAt = this.speechEndedAt
+    this.speechEndedAt = null
     if (!this.live() || !this.current) return ''
     this.clearSilence()
     const intent = classify(said)
@@ -189,7 +210,12 @@ export class InterviewEngine {
       }
     }
 
-    this.current.parts.push({ text: said, speechMs, at: this.deps.now() })
+    const part: AnswerPart = { text: said, speechMs, at: this.deps.now() }
+    if (endedAt !== null) {
+      part.endedAt = endedAt
+      if (speechMs !== undefined) part.startedAt = endedAt - speechMs
+    }
+    this.current.parts.push(part)
     this.armAnswerTimer()
     this.emit()
     return ''
@@ -201,9 +227,19 @@ export class InterviewEngine {
     this.clearSilence()
   }
 
+  // The voice detector closed a stretch of speech that ended at `at`; its
+  // transcript follows in `heard`.
+  speechEnded(at: number) {
+    this.speechEndedAt = at
+  }
+
   // The interviewer's voice finished: start counting silence if nothing has
   // been said back yet.
   interviewerFinished() {
+    if (this.askClock && this.current && this.current.parts.length === 0) {
+      this.current.askedEndedAt = this.deps.now()
+    }
+    this.askClock = false
     if (!this.live() || this.paused || this.busy || !this.current || this.current.parts.length) return
     this.clearSilence()
     if (this.silenceStage === 0) {
@@ -223,6 +259,7 @@ export class InterviewEngine {
   // Says the current question (or the last thing asked) again.
   repeat() {
     if (!this.live() || !this.current) return
+    this.askClock = this.current.parts.length === 0
     this.speakAside(this.askedText())
   }
 
@@ -246,6 +283,7 @@ export class InterviewEngine {
     if (!this.paused) return
     this.paused = null
     this.silenceStage = 0
+    this.askClock = !this.current?.parts.length
     // Whatever was said before the pause still counts; carry on from there.
     this.speakAside(this.current?.parts.length ? lines.resume : `${lines.resume} ${this.askedText()}`)
     if (this.current?.parts.length) this.armAnswerTimer()
@@ -422,6 +460,7 @@ export class InterviewEngine {
   // technical questions the intent would give the answer away, so only invite
   // a plain explanation.
   private rephrase() {
+    this.askClock = true
     const question = this.plan.questions[this.index]
     if (this.current?.kind === 'question' && question) {
       const line =
@@ -473,9 +512,10 @@ export class InterviewEngine {
   }
 
   private say(kind: ExchangeKind, text: string): Exchange {
-    const exchange: Exchange = { kind, said: text, parts: [] }
+    const exchange: Exchange = { kind, said: text, parts: [], askedAt: this.deps.now() }
     this.current = exchange
     this.silenceStage = 0
+    this.askClock = true
     this.speakLine(text)
     return exchange
   }

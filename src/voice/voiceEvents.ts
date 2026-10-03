@@ -4,6 +4,8 @@ import { setVoice } from './voiceStore'
 export type VoiceProps = {
   onSubmit: (text: string, details?: { speechMs?: number }) => AsyncIterable<string> | string
   onInterrupt: () => void
+  // The voice detector closed a stretch of speech (for the report's timings).
+  onSpeechEnd: () => void
   // Kokoro voice id of the chosen interviewer.
   voice: string
 }
