@@ -1,0 +1,94 @@
+{
+  "cli_version": "0.11.3",
+  "checkpoint_id": "01M4228GKG5X1M9V4W5AKXNF0J",
+  "session_id": "e0972c9d-f551-419e-8995-044a83f59546",
+  "strategy": "manual-commit",
+  "created_at": "2026-10-03T23:40:48.552872Z",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "save_step_count": 2,
+  "files_touched": [
+    "src/interview/engine.ts",
+    "src/interview/session.ts",
+    "src/voice/PhoneVoice.tsx",
+    "src/voice/VideoVoice.tsx",
+    "src/voice/VoiceHost.tsx",
+    "src/voice/voiceEvents.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-5-5",
+  "turn_id": "f97dcabb1546",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 1072,
+    "cache_creation_tokens": 2537071,
+    "cache_read_tokens": 236196213,
+    "output_tokens": 544915,
+    "api_call_count": 535
+  },
+  "skill_events_version": 1,
+  "skill_events": [
+    {
+      "id": "claude-skill-toolu_01FsvxZpVe1LoqLv1LUXoYNn",
+      "event_type": "tool_invocation",
+      "skill": {
+        "name": "artifact-diagramming"
+      },
+      "source": {
+        "agent": "claude-code",
+        "signal": "skill_tool_use",
+        "confidence": "explicit"
+      },
+      "turn_id": "79e12503da32",
+      "transcript_anchor": {
+        "unit": "line",
+        "start": 2810,
+        "end": 2811,
+        "entry_ids": [
+          "e4e37115-5f8f-49fa-b625-a392b1eaf6a6"
+        ],
+        "tool_use_id": "toolu_01FsvxZpVe1LoqLv1LUXoYNn"
+      },
+      "native": {
+        "tool_name": "Skill",
+        "tool_use_id": "toolu_01FsvxZpVe1LoqLv1LUXoYNn"
+      },
+      "collapse": {
+        "target": "tool_pair",
+        "label": "Skill: artifact-diagramming",
+        "default_collapsed": true
+      }
+    }
+  ],
+  "session_metrics": {
+    "turn_count": 6
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-10-03T23:40:48.382224Z",
+    "agent_lines": 72,
+    "agent_removed": 7,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 72,
+    "total_lines_changed": 79,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 72,
+      "agent_lines_removed": 7
+    }
+  ]
+}
