@@ -1,0 +1,9 @@
+yes lets go ahead with 3.6 and fixes and then before moving our interview room setup let's revisit the whole architecture in diagram and verify it.
+
+---
+
+create a artifact of the architecture diagram for the mock interview, i will review it
+
+---
+
+what are the guards and intent we are using. is gemma light be able to assess the response quality or 4 e2b is required for that
