@@ -1,5 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, type Dispatch } from 'react'
-import { createPlaceholderBrain } from '../interview/placeholderBrain'
+import { attachGemma, heard } from '../interview/session'
 import { resetVoice } from './voiceStore'
 import { DOWNLOADS } from '../app/downloads'
 import type { Display, Mode } from '../app/state'
@@ -28,11 +28,13 @@ export function EngineHost({
   onLoad: Dispatch<LoadAction>
 }) {
   const gemma = useRef<GemmaClient | null>(null)
-  const brain = useRef<ReturnType<typeof createPlaceholderBrain> | null>(null)
-
   // What the package calls with each stretch of speech Whisper transcribed.
-  // Stable identity; it reads the current brain at call time.
-  const onSubmit = useCallback((text: string) => brain.current?.onSubmit(text) ?? '', [])
+  // The interview engine collects it and always replies '' (keep listening);
+  // it speaks its own lines.
+  const onSubmit = useCallback(
+    (text: string, details?: { speechMs?: number }) => heard(text, details?.speechMs),
+    [],
+  )
   // The candidate talked over the interviewer: stop generating the rest.
   const onInterrupt = useCallback(() => gemma.current?.stop(), [])
 
@@ -48,7 +50,7 @@ export function EngineHost({
   useEffect(() => {
     const client = new GemmaClient()
     gemma.current = client
-    brain.current = createPlaceholderBrain(client)
+    attachGemma(client)
     // Measured against the model's known size, not the files seen so far: the
     // small config and tokenizer files finish before the weights start, and a
     // running total would read 100% with 859 MB still to come.
@@ -69,7 +71,7 @@ export function EngineHost({
       })
     return () => {
       gemma.current = null
-      brain.current = null
+      attachGemma(null)
       client.dispose()
     }
   }, [mode, onLoad])

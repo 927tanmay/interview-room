@@ -534,6 +534,22 @@ progress::-moz-progress-bar {
   aspect-ratio: 1;
 }
 
+.interview-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 0 0 4px;
+}
+
+.interview-meta .state {
+  margin-bottom: 0;
+}
+
+.said {
+  color: var(--muted);
+}
+
 .state {
   display: inline-block;
   font-weight: 600;

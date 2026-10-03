@@ -49,6 +49,13 @@ function subscribe(listener: () => void) {
   return () => listeners.delete(listener)
 }
 
+// For code outside React (the interview session): called on every change.
+export function onVoiceChange(listener: (state: VoiceState) => void): () => void {
+  const wrapped = () => listener(state)
+  listeners.add(wrapped)
+  return () => listeners.delete(wrapped)
+}
+
 export function useVoice(): VoiceState {
   return useSyncExternalStore(subscribe, () => state)
 }

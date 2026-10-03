@@ -25,6 +25,10 @@ export type BankQuestion = {
   sampleAnswer: string
   // Written follow-ups, spoken when Gemma's line is rejected by the guard.
   followUps: string[]
+  // System design only: run as a conversation, not one long answer. The
+  // interviewer answers clarifying questions from `assumptions` and moves the
+  // discussion on with `probes`, in order (design, deep dive, scale).
+  design?: { assumptions: string; probes: string[] }
 }
 
 const ALL: Level[] = ['intern', 'junior', 'mid', 'senior']
@@ -306,6 +310,16 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'Asks about scale and features first (custom links, expiry, analytics). Proposes a create endpoint that stores code to URL in a key-value store, codes from a counter encoded in base62 (or a hash with collision checks), and a redirect endpoint served mostly from a cache because reads far outnumber writes. Then talks about scaling reads, analytics written asynchronously, and abuse.',
     followUps: ['How would you generate the short codes so two links never collide?', 'Redirects are most of the traffic. How do you keep them fast?'],
+    design: {
+      assumptions:
+        'About 100 million new links a month, reads about 100 times more than writes. Links never expire unless the user deletes them. Custom aliases are nice to have. Basic click counts, no real-time analytics.',
+      probes: [
+        'Okay. Walk me through the main pieces at a high level.',
+        'How would you generate the short codes?',
+        'Reads dominate. How do you keep redirects fast as traffic grows?',
+        'Where would this design break first, and what would you change?',
+      ],
+    },
   },
   {
     id: 'sd-file-sharing',
@@ -322,6 +336,16 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'Stores images in object storage and metadata (owner, sharing, captions) in a database. Uploads go straight to storage with a presigned URL, a queue triggers thumbnail generation, and a CDN serves images. Covers private links, size limits, and what happens when a processing job fails.',
     followUps: ['How would the upload work without passing every file through your servers?', 'How would you make shared photos load quickly worldwide?'],
+    design: {
+      assumptions:
+        'About 10 million users, around 5 million photo uploads a day, average photo 3 MB. Photos can be private or shared by link. Viewers are worldwide.',
+      probes: [
+        'Okay. What are the main components?',
+        'Walk me through what happens when someone uploads a photo.',
+        'How would you serve photos quickly to viewers around the world?',
+        'What would you do if thumbnail generation started falling behind?',
+      ],
+    },
   },
   {
     id: 'sd-chat',
@@ -338,6 +362,16 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'Clients hold WebSocket connections to chat servers; a message is persisted, then routed to the recipient’s server (via a pub/sub layer) or queued for push notification if they are offline. Covers ordering per conversation, delivery and read receipts, group chats fanning out, and reconnecting clients catching up from the last message they saw.',
     followUps: ['What happens when the recipient is offline?', 'How do you keep messages in order within a conversation?'],
+    design: {
+      assumptions:
+        'About 50 million daily users, one-to-one chats and groups up to 100 people. Messages must not be lost and should arrive in order. Users are often offline on mobile.',
+      probes: [
+        'Okay. How would messages get from one phone to another?',
+        'Where are messages stored, and how do you keep them in order?',
+        'What happens when the recipient is offline?',
+        'How does this change for a group of 100 people?',
+      ],
+    },
   },
   {
     id: 'sd-news-feed',
@@ -354,6 +388,16 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'Compares fan-out on write (push posts into each follower’s precomputed feed) with fan-out on read (merge at request time), and proposes a hybrid where accounts with huge followings are merged at read time. Keeps feeds in a cache, paginates with cursors, and mentions ranking as a separate step.',
     followUps: ['What happens when someone with ten million followers posts?', 'How would you paginate the feed as new posts arrive?'],
+    design: {
+      assumptions:
+        'About 200 million daily users, the average user follows 200 accounts, a few accounts have tens of millions of followers. The feed should load in under half a second. Ranking can start simple, newest first.',
+      probes: [
+        "Okay. How would a user's feed be built?",
+        'Would you build feeds when someone posts, or when someone opens the app? Why?',
+        'What happens when an account with millions of followers posts?',
+        'How would you paginate the feed as new posts keep arriving?',
+      ],
+    },
   },
   {
     id: 'sd-notifications',
@@ -370,6 +414,16 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'Services publish notification events; a notification service checks user preferences and rate limits, then puts work on per-channel queues with workers calling email, SMS and push providers. Retries with backoff, a dead-letter queue, idempotency so retries do not double-send, and templates plus delivery tracking.',
     followUps: ['What happens if the SMS provider is down for an hour?', 'How do you stop one user getting the same notification twice?'],
+    design: {
+      assumptions:
+        'About 50 million notifications a day across email, SMS and push. Some are urgent, like password resets; most are not. Users can opt out per channel.',
+      probes: [
+        'Okay. What are the main components?',
+        "How does a notification move from the event to the user's phone?",
+        'What happens when a provider fails or is slow?',
+        'How do you respect user preferences and avoid spamming people?',
+      ],
+    },
   },
   {
     id: 'sd-fe-typeahead',
@@ -386,6 +440,16 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'Debounces input, cancels stale requests with AbortController (or ignores responses that are not for the latest query), caches recent results, and shows loading and empty states. The list is an accessible combobox: arrow keys, Enter, Escape, and announced results.',
     followUps: ['What happens if an older request comes back after a newer one?', 'How would someone use it with only a keyboard?'],
+    design: {
+      assumptions:
+        'Suggestions come from an existing API that takes a query and returns up to 10 results in about 200 milliseconds. Users type fast. It must work on mobile and with a keyboard.',
+      probes: [
+        'Okay. What happens on each keystroke?',
+        'What if responses come back in a different order from the requests?',
+        'Would you cache anything on the client?',
+        'How would someone use it with only a keyboard or a screen reader?',
+      ],
+    },
   },
   {
     id: 'sd-fe-design-system',
@@ -402,6 +466,16 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'Starts from design tokens and a few well-designed primitives with small, consistent props, builds accessibility in, documents everything in Storybook with visual regression tests, and releases with semantic versioning, changelogs and codemods for breaking changes.',
     followUps: ['How would you ship a breaking change without blocking every team?', 'How would you make sure components stay accessible?'],
+    design: {
+      assumptions:
+        'Five product teams on React, different release schedules, one brand that is changing next year. The library will have about 40 components.',
+      probes: [
+        'Okay. Where would you start?',
+        'How would you design the API of a component like a button or a modal?',
+        'How would teams theme it for the coming rebrand?',
+        'How would you release a breaking change without blocking teams?',
+      ],
+    },
   },
   {
     id: 'sd-be-booking',
@@ -418,6 +492,16 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'Holds a seat for a few minutes when chosen (a row with an expiry, taken inside a transaction or with a unique constraint or optimistic locking), confirms it when payment succeeds, and releases it when the hold expires or payment fails. Mentions handling a rush of users for a popular event with a queue.',
     followUps: ['Two people click the same seat at the same moment. What happens?', 'What happens if payment fails after the seat is held?'],
+    design: {
+      assumptions:
+        'Concerts with up to 50,000 seats. Popular events sell out in minutes with hundreds of thousands of people trying at once. Payment takes up to a few minutes.',
+      probes: [
+        'Okay. What are the main pieces and the data you store?',
+        'Two people pick the same seat at the same moment. What happens?',
+        'How long would you hold a seat, and what happens when the hold runs out?',
+        'How would you cope with a huge rush when tickets go on sale?',
+      ],
+    },
   },
   {
     id: 'sd-ml-recsys',
@@ -434,6 +518,16 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'Defines the goal (clicks, purchases), uses a two-stage design: cheap candidate generation (collaborative filtering, item similarity, popular items) then a ranking model on user and item features. Handles cold start with popularity and content features, evaluates offline then with an A/B test, and watches for feedback loops.',
     followUps: ['What would you show a brand-new user?', 'How would you know the recommendations are actually better?'],
+    design: {
+      assumptions:
+        'About 5 million users and 1 million products. The goal is more purchases. Recommendations appear on the home page and product pages, with about 100 milliseconds to respond. There is click and purchase history.',
+      probes: [
+        'Okay. What is the model actually predicting?',
+        'How would you get from a million products to the ten you show?',
+        'What would you show a brand-new user?',
+        'How would you know the new recommendations are better?',
+      ],
+    },
   },
   {
     id: 'sd-ml-fraud',
@@ -450,6 +544,16 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'Scores each payment within a tight latency budget using precomputed and streaming features (velocity, device, history), combines rules with a model, picks thresholds by the cost of blocking good customers versus missing fraud, sends borderline cases to human review, and retrains as labels arrive from chargebacks because fraud patterns drift.',
     followUps: ['Where do your labels come from, and how late do they arrive?', 'How do you decide what gets blocked versus reviewed?'],
+    design: {
+      assumptions:
+        'About 1,000 payments a second, a decision needed within 100 milliseconds. Fraud is about 0.1 percent of payments. Fraud labels arrive weeks later from chargebacks.',
+      probes: [
+        'Okay. What signals would you use to decide?',
+        'How do you make a decision within 100 milliseconds?',
+        'How do you choose what gets blocked and what goes to human review?',
+        'Fraud patterns change. How do you keep the model up to date?',
+      ],
+    },
   },
 
   // ----------------------------------------------------------------- Frontend

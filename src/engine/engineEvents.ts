@@ -2,7 +2,7 @@ import { setVoice } from './voiceStore'
 
 // What EngineHost hands each engine: the same for phone and video.
 export type EngineProps = {
-  onSubmit: (text: string) => AsyncIterable<string> | string
+  onSubmit: (text: string, details?: { speechMs?: number }) => AsyncIterable<string> | string
   onInterrupt: () => void
 }
 

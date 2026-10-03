@@ -186,6 +186,29 @@ guard rejects it, a written line for that angle is spoken instead. (Test run:
 | A model fails to load | `onError` | Plain explanation and a retry |
 | Tab hidden | `visibilitychange` | Pauses |
 
+### System design round (parked, come back later)
+
+Agreed scope, kept small:
+- **Conversational, not one long answer.** Each question carries written
+  facts (scale, users, constraints) and 4 probes in order (high-level design,
+  deep dive, scale, trade-offs).
+- A clarifying question from the candidate ("how many users?", "can I
+  assume…") is answered with the question's facts; otherwise the next probe
+  is asked. At most 2 clarifying answers; wrap up after the 4 probes, 7
+  exchanges in all, or about 10 minutes.
+- **No Gemma in this round**: facts and probes are written lines, so no
+  invented numbers, same in Light and Heavy. **No judging** of the design (no
+  "possible gaps", no review).
+- Long pause before an answer counts as finished: 7 s (5 s elsewhere).
+- Only when "System design" is chosen as the round; not in the full loop.
+  Spoken only: no whiteboard or diagrams.
+- Report: the exchanges (what was asked, what they said) with time and words
+  per exchange. No scores.
+
+Done so far: the 10 questions with facts and probes (`bank.ts`), and the
+engine's design branch (`engine.ts`). Not offered in setup and not tested
+until we come back to it.
+
 ---
 
 ## 5. Question bank

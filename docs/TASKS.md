@@ -126,18 +126,28 @@ code:
   a full loop. Checked: unique ids, at least 3 questions per round for every
   track and level (system design: junior and up, none for interns), full
   loop is 2 behavioural, 2 technical, 1 HR with no repeats.
-- [ ] **3.2 Engine state machine.** Plain code, no UI: greeting, one small-talk
+- [x] **3.2 Engine state machine.** Plain code, no UI: greeting, one small-talk
   turn, ask, collect the answer across pauses (done on "I'm done" or after a
   long pause, never a short silence), follow-up, reaction, next question, "any questions for me?",
   closing. Testable without a microphone through `sendText`.
-- [ ] **3.3 Follow-up angle rules.** Short answer, "we" without "I", no
+- [x] **3.3 Follow-up angle rules.** Short answer, "we" without "I", no
   outcome, missing key point, full STAR, technical edge case (PLAN.md section
   4).
-- [ ] **3.4 Prompts and guard.** Port the guided prompts and guard from
+- [x] **3.4 Prompts and guard.** Port the guided prompts and guard from
   `evals/interviewer.html` with the two fixes run 5 showed: accept a question
   ending in "." or phrased as an instruction ("Describe…", "Walk me
   through…"), and reject a reaction that is really a new question. Written
   fallback line per angle.
+  Done in `src/interview/`: `engine.ts` (plain code; the package always gets
+  '' and the engine speaks its own lines; answers end on "I'm done" or 5 s
+  of quiet after the last words), `angles.ts`, `prompts.ts`, `guard.ts`,
+  `writer.ts` (Gemma with a 6 s limit, then the written line), `lines.ts`,
+  `session.ts` (wires it to the voice, Gemma and the screen). Checked
+  without a microphone (scratchpad test, 40 checks): the guard on the raw
+  lines from runs 4 and 5 passes 8/12 for Gemma 3 1B (the same 8 good lines,
+  praise stripped) and 12/12 for Gemma 4 E2B (the old guard 8/12); thinking
+  pauses keep one answer; angles, fallbacks, repeat, skip, end.
+  Still to hear in Chrome: a full spoken interview (that also checks 2.2).
 - [ ] **3.5 Re-run the evals with the new guard on Light.** The eval page
   does not use the OPFS cache, so this downloads 880 MB again: ask first.
   Record the pass rate in MODEL-TESTS.md. (Heavy: phase H.)

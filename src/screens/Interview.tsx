@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react'
 import type { Display } from '../app/state'
 import { ScreenFrame } from '../components/ScreenFrame'
-import { useVoice, voiceControls, type VoiceStatus } from '../engine/voiceStore'
-import { OPENING } from '../interview/placeholderBrain'
+import { useVoice, type VoiceStatus } from '../engine/voiceStore'
+import { defaultSettings, interview, startInterview, useInterview } from '../interview/session'
 
 // One clear state, in words (UX.md: interview screen). 'idle' means the mic is
 // open and waiting for speech, which to the candidate is listening too.
@@ -14,24 +14,35 @@ const STATE_LABEL: Record<VoiceStatus, string> = {
   speaking: 'Speaking',
 }
 
-// Step 2.1 wiring: the voice loop end to end with a placeholder interviewer.
-// Phase 3 (engine) and step 4.2 (room layout, timer, controls) build on it.
-// The avatar or voice-only stage is not here: it belongs to the engine, which
-// App keeps mounted beside this screen.
+// The interview runs here; the avatar or voice-only stage belongs to the
+// engine, which App keeps mounted beside this screen. Step 4.2 adds the timer,
+// progress dots and Pause; step 3.6 the recovery lines.
 export function Interview({ display, onEnd }: { display: Display; onEnd: () => void }) {
   const voice = useVoice()
-  const opened = useRef(false)
+  const state = useInterview()
+  const started = useRef(false)
 
   useEffect(() => {
-    if (opened.current) return
-    opened.current = true
-    voiceControls()?.speak(OPENING)
+    if (started.current) return
+    started.current = true
+    startInterview(defaultSettings())
   }, [])
+
+  const finished = state?.phase === 'done'
+  // The engine is busy while Gemma words a follow-up; the package is idle then.
+  const label = state?.busy ? 'Thinking' : STATE_LABEL[voice.status]
+  const progress =
+    state && state.questionIndex >= 0 && state.questionIndex < state.total
+      ? `Question ${state.questionIndex + 1} of ${state.total}`
+      : null
 
   return (
     <ScreenFrame title={display === 'video' ? 'Video interview' : 'Phone screen'}>
-      <p className="state" role="status">
-        {STATE_LABEL[voice.status]}
+      <p className="interview-meta">
+        <span className="state" role="status">
+          {finished ? 'Finished' : label}
+        </span>
+        {progress && <span className="muted">{progress}</span>}
       </p>
 
       {voice.micError && (
@@ -44,37 +55,58 @@ export function Interview({ display, onEnd }: { display: Display; onEnd: () => v
         </div>
       )}
 
-      <section aria-labelledby="question-title">
-        <h2 id="question-title" className="label">
+      {state?.question && (
+        <section aria-labelledby="question-title">
+          <h2 id="question-title" className="label">
+            Question
+          </h2>
+          <p className="question">{state.question.question}</p>
+        </section>
+      )}
+
+      <section aria-labelledby="said-title">
+        <h2 id="said-title" className="label">
           Interviewer
         </h2>
-        <p className="question">{voice.said || OPENING}</p>
+        <p className="said">{state?.interviewerLine}</p>
       </section>
 
       <section aria-labelledby="heard-title">
         <h2 id="heard-title" className="label">
           What I heard
         </h2>
-        <p className={voice.heard ? 'heard' : 'heard placeholder'} aria-live="polite">
-          {voice.heard || 'Your words appear here once you finish a sentence.'}
+        <p className={state?.currentAnswer ? 'heard' : 'heard placeholder'} aria-live="polite">
+          {state?.currentAnswer || 'Your words appear here as you speak. Take your time: pauses are fine.'}
         </p>
       </section>
 
       <div className="actions interview-controls">
-        <button type="button" className="primary">
-          I'm done
-        </button>
-        <button type="button">Repeat question</button>
-        <button type="button">Skip</button>
-        <button
-          type="button"
-          onClick={() => {
-            voiceControls()?.stopListening()
-            onEnd()
-          }}
-        >
-          End interview
-        </button>
+        {finished ? (
+          <button type="button" className="primary" onClick={onEnd}>
+            See your report
+          </button>
+        ) : (
+          <>
+            <button type="button" className="primary" onClick={interview.done} disabled={!state?.currentAnswer}>
+              I'm done
+            </button>
+            <button type="button" onClick={interview.repeat}>
+              Repeat question
+            </button>
+            <button type="button" onClick={interview.skip} disabled={!state?.question}>
+              Skip
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                interview.end()
+                onEnd()
+              }}
+            >
+              End interview
+            </button>
+          </>
+        )}
       </div>
     </ScreenFrame>
   )
