@@ -57,12 +57,27 @@ export function startInterview(settings: InterviewSettings) {
       },
     },
   )
-  // The candidate started talking again: their answer is not over yet.
+  // Signals from the voice: the candidate started talking again (their
+  // answer is not over), the interviewer finished speaking (start counting
+  // silence), the microphone went away (pause).
   let last = ''
-  stopWatchingVoice = onVoiceChange((v) => {
+  const unwatchVoice = onVoiceChange((v) => {
     if (v.status === 'listening' && last !== 'listening') engine?.userStartedSpeaking()
+    if (last === 'speaking' && v.status !== 'speaking') engine?.interviewerFinished()
+    if (v.micError) engine?.pause('mic')
     last = v.status
   })
+  // A hidden tab pauses the interview and stops the voice mid-sentence.
+  const onVisibility = () => {
+    if (document.visibilityState !== 'hidden') return
+    voiceControls()?.interrupt()
+    engine?.pause('hidden')
+  }
+  document.addEventListener('visibilitychange', onVisibility)
+  stopWatchingVoice = () => {
+    unwatchVoice()
+    document.removeEventListener('visibilitychange', onVisibility)
+  }
   engine.start()
 }
 
@@ -83,6 +98,16 @@ export const interview = {
   repeat: () => engine?.repeat(),
   skip: () => engine?.skip(),
   end: () => engine?.end(),
+  pause: () => {
+    voiceControls()?.interrupt()
+    engine?.pause('button')
+  },
+  // From a click, so the microphone can be reopened after a hidden tab or a
+  // lost device.
+  resume: () => {
+    void voiceControls()?.startListening()
+    engine?.resume()
+  },
 }
 
 function subscribe(listener: () => void) {

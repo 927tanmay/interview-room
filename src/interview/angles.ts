@@ -1,4 +1,5 @@
 import type { BankQuestion } from './bank'
+import { toYou } from './text'
 
 // What the follow-up probes, chosen by rules (PLAN.md: follow-up angles).
 // Gemma is told the angle and only words it; it never decides what to ask.
@@ -60,17 +61,6 @@ export function angleNote(angle: Angle): string {
     case 'motivation':
       return 'Ask one question about what they want or value, based on what they said.'
   }
-}
-
-// Key-point labels are written about the candidate ("their own part"); spoken
-// to them, they become "your own part".
-function toYou(label: string): string {
-  return label
-    .replace(/\bthemselves\b/g, 'yourself')
-    .replace(/\btheir\b/g, 'your')
-    .replace(/\bthey are\b/g, 'you are')
-    .replace(/\bthey\b/g, 'you')
-    .replace(/\bthem\b/g, 'you')
 }
 
 // Spoken when Gemma's line does not survive the guard.

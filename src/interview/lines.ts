@@ -28,6 +28,16 @@ export const lines = {
   designWrapUp: "Let's stop there. That's a good place to wrap up this one.",
 
   skip: "No problem, let's move on.",
+
+  // Recovery (PLAN.md: when something goes wrong).
+  silenceNudge: 'Take your time. Want me to repeat the question?',
+  silenceMoveOn: "No problem, let's move on to the next one.",
+  notCaught: "Sorry, I didn't catch that. Could you say it again?",
+  rephrase: 'Let me put it another way.',
+  rephraseTechnical: 'Sure. Just explain it the way you would to a teammate.',
+  dontKnowNudge: "That's okay. Take a guess, or tell me how you'd go about finding out.",
+  paused: "Sure, take your time. Say I'm ready, or press Resume, when you want to carry on.",
+  resume: "Okay, let's carry on.",
   candidateQuestions: "That's all my questions. Do you have any questions for me?",
   candidateQuestionReply: "That's a good one to ask a real interviewer. I'll note it in your report.",
   closing: 'Thanks for your time today. Your report is ready.',

@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import type { Display } from '../app/state'
 import { ScreenFrame } from '../components/ScreenFrame'
 import { useVoice, type VoiceStatus } from '../engine/voiceStore'
+import type { PauseReason } from '../interview/engine'
 import { defaultSettings, interview, startInterview, useInterview } from '../interview/session'
 
 // One clear state, in words (UX.md: interview screen). 'idle' means the mic is
@@ -14,9 +15,16 @@ const STATE_LABEL: Record<VoiceStatus, string> = {
   speaking: 'Speaking',
 }
 
+const PAUSED: Record<PauseReason, string> = {
+  asked: "Paused. Say I'm ready, or press Resume, when you want to carry on.",
+  button: "Paused. Say I'm ready, or press Resume, when you want to carry on.",
+  hidden: 'Paused because the tab was in the background. Press Resume to carry on.',
+  mic: 'Paused because the microphone stopped. Reconnect it, then press Resume.',
+}
+
 // The interview runs here; the avatar or voice-only stage belongs to the
-// engine, which App keeps mounted beside this screen. Step 4.2 adds the timer,
-// progress dots and Pause; step 3.6 the recovery lines.
+// engine, which App keeps mounted beside this screen. Step 4.2 adds the timer
+// and progress dots.
 export function Interview({ display, onEnd }: { display: Display; onEnd: () => void }) {
   const voice = useVoice()
   const state = useInterview()
@@ -30,7 +38,7 @@ export function Interview({ display, onEnd }: { display: Display; onEnd: () => v
 
   const finished = state?.phase === 'done'
   // The engine is busy while Gemma words a follow-up; the package is idle then.
-  const label = state?.busy ? 'Thinking' : STATE_LABEL[voice.status]
+  const label = state?.paused ? 'Paused' : state?.busy ? 'Thinking' : STATE_LABEL[voice.status]
   const progress =
     state && state.questionIndex >= 0 && state.questionIndex < state.total
       ? `Question ${state.questionIndex + 1} of ${state.total}`
@@ -54,6 +62,18 @@ export function Interview({ display, onEnd }: { display: Display; onEnd: () => v
           </p>
         </div>
       )}
+
+      {state?.paused && (
+        <div className="notice">
+          <p>{PAUSED[state.paused]}</p>
+        </div>
+      )}
+
+      {state?.notes.map((note) => (
+        <p key={note} className="muted">
+          {note}
+        </p>
+      ))}
 
       {state?.question && (
         <section aria-labelledby="question-title">
@@ -87,9 +107,23 @@ export function Interview({ display, onEnd }: { display: Display; onEnd: () => v
           </button>
         ) : (
           <>
-            <button type="button" className="primary" onClick={interview.done} disabled={!state?.currentAnswer}>
+            <button
+              type="button"
+              className="primary"
+              onClick={interview.done}
+              disabled={!state?.currentAnswer || !!state?.paused}
+            >
               I'm done
             </button>
+            {state?.paused ? (
+              <button type="button" onClick={interview.resume}>
+                Resume
+              </button>
+            ) : (
+              <button type="button" onClick={interview.pause}>
+                Pause
+              </button>
+            )}
             <button type="button" onClick={interview.repeat}>
               Repeat question
             </button>

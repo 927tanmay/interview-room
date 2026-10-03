@@ -151,9 +151,17 @@ code:
 - [ ] **3.5 Re-run the evals with the new guard on Light.** The eval page
   does not use the OPFS cache, so this downloads 880 MB again: ask first.
   Record the pass rate in MODEL-TESTS.md. (Heavy: phase H.)
-- [ ] **3.6 Recovery.** Silence at 12 s and 25 s, "repeat that", "what do you
+- [x] **3.6 Recovery.** Silence at 12 s and 25 s, "repeat that", "what do you
   mean", "I don't know", garbled transcript, pause / stop, lost microphone,
   Gemma failure mid-interview (carry on with written lines), tab hidden.
+  Done in `engine.ts` + `intents.ts` (phrases only checked on short stretches
+  at the start of an answer, so real answers containing "sorry" or "I don't
+  know" stay answers). Silence counts from the end of the interviewer's
+  voice. "What do you mean" rephrases from the intent, except technical
+  questions, where that would give the answer away. Two Gemma failures in a
+  row switch to written follow-ups and add a note for the report. Pause and
+  Resume buttons; a hidden tab or lost microphone pauses. 88 checks pass
+  without a microphone.
 
 ## Phase 4: Setup and interview room (Sat afternoon)
 
