@@ -1,0 +1,5 @@
+yup create the public repo
+
+---
+
+for render: static site from render.yaml, free plan. pin the node version to what i use locally. make sure no model files end up in dist, models should come from hugging face. set the cross-origin isolation headers to match the vite dev server, and tell me if anything cross-origin (fonts, avatar file, images) would get blocked by them.
