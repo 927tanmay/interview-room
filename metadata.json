@@ -1,0 +1,36 @@
+{
+  "cli_version": "0.11.3",
+  "checkpoint_id": "01M4184H8F7GT8ZR8PF1HBHYFN",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "src/App.tsx",
+    "src/app/usePrefersReducedMotion.ts",
+    "src/engine/EngineHost.tsx",
+    "src/engine/PhoneEngine.tsx",
+    "src/engine/VideoEngine.tsx",
+    "src/engine/engineEvents.ts",
+    "src/engine/voiceStore.ts",
+    "src/gemma/GemmaClient.ts",
+    "src/index.css",
+    "src/interview/placeholderBrain.ts",
+    "src/screens/Interview.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 60,
+    "cache_creation_tokens": 504611,
+    "cache_read_tokens": 13827471,
+    "output_tokens": 33793,
+    "api_call_count": 30
+  }
+}
