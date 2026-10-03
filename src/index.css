@@ -595,6 +595,24 @@ progress::-moz-progress-bar {
   border: 0;
 }
 
+/* Dev-only session log */
+
+.session-log summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.session-log pre {
+  max-height: 360px;
+  overflow: auto;
+  font-size: 0.8rem;
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  margin: 12px 0 0;
+  white-space: pre-wrap;
+}
+
 /* A plain notice: neutral, no warning colour (one accent only). */
 .notice {
   border-left: 3px solid var(--text);
