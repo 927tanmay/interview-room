@@ -1,7 +1,8 @@
 import { Canvas } from '@react-three/fiber'
-import { useCallback, useEffect, useRef, type Dispatch } from 'react'
+import { useCallback, useEffect, useRef, useState, type Dispatch } from 'react'
 import { AiVoiceAvatar, type AiVoiceAvatarHandle } from 'react-ai-voice-avatar'
 import { usePrefersReducedMotion } from '../app/usePrefersReducedMotion'
+import { HeadShot } from './HeadShot'
 import { onTranscript, type VoiceProps } from './voiceEvents'
 import type { LoadAction, LoadItemId } from './loading'
 import { registerVoiceControls, setAudioLevel, setVoice } from './voiceStore'
@@ -24,6 +25,7 @@ export default function VideoVoice({
 }: VoiceProps & { onLoad: Dispatch<LoadAction>; visible: boolean; avatar: 'ananya' | 'aarav' }) {
   const reducedMotion = usePrefersReducedMotion()
   const avatar = useRef<AiVoiceAvatarHandle>(null)
+  const [modelReady, setModelReady] = useState(false)
 
   // The handle's methods are read at call time, so the controls stay valid
   // whatever the avatar re-renders.
@@ -51,7 +53,7 @@ export default function VideoVoice({
       {/* No frames drawn while off stage on the setup screen: the GPU is busy
           loading the models. */}
       <Canvas
-        camera={{ position: [0, 0.15, 2.2], fov: 32 }}
+        camera={{ position: [0, 1.5, 1.2], fov: 30 }}
         frameloop={visible ? 'always' : 'demand'}
         aria-hidden="true"
       >
@@ -69,7 +71,10 @@ export default function VideoVoice({
           showCaptions={false}
           gestures={!reducedMotion}
           loadingProgress={loadingProgress}
-          onModelLoaded={() => onLoad({ type: 'ready', id: 'avatar' })}
+          onModelLoaded={() => {
+            setModelReady(true)
+            onLoad({ type: 'ready', id: 'avatar' })
+          }}
           onStatusChange={(status) => {
             setVoice({ status })
             if (status === 'loading') return
@@ -83,6 +88,7 @@ export default function VideoVoice({
             else if (e.stage === 'speech-synthesis') onLoad({ type: 'failed', id: 'kokoro', message: e.message })
           }}
         />
+        <HeadShot ready={modelReady} />
       </Canvas>
     </div>
   )
