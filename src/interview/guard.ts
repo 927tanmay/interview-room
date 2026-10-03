@@ -24,7 +24,16 @@ const isAsk = (s: string) => s.endsWith('?') || ASKS.test(s)
 // ("He explained the steps…") rather than asking.
 const ROLE_PLAY = /^[A-Z][a-z]+:|^(he|she|they) (explained|said|described|answered)\b/
 
-export function guardFollowUp(raw: string, asked = '', answer = ''): string | null {
+// Some angles can be checked in the words themselves: a follow-up that was
+// meant to ask for the outcome has to ask about one, and one meant to ask what
+// the candidate did has to ask about them. Seen in a real run: asked for the
+// outcome, Gemma asked "How did you handle…", which the answer had covered.
+const ANGLE_WORDS: Partial<Record<string, RegExp>> = {
+  outcome: /\b(result|results|turn(ed|s)? out|outcome|impact|measur\w*|happened (next|after)|end(ed)? up|in the end|chang(e|ed|es)|difference|improv\w*|effect|metric|number)\b/i,
+  ownership: /\b(personally|yourself|your (own )?(part|role|contribution)|did you|you did|you do|you yourself|you take|you took)\b/i,
+}
+
+export function guardFollowUp(raw: string, asked = '', answer = '', angle?: string): string | null {
   if (ROLE_PLAY.test(raw.trim())) return null
   const answerNorm = norm(answer)
   const ss = sentences(raw)
@@ -37,6 +46,8 @@ export function guardFollowUp(raw: string, asked = '', answer = ''): string | nu
   if (question.endsWith('.') && !/^(tell me|walk me|talk me|describe|explain|give me|share)\b/i.test(question)) {
     question = `${question.slice(0, -1)}?`
   }
+  const mustSay = angle ? ANGLE_WORDS[angle] : undefined
+  if (mustSay && !mustSay.test(question)) return null
   // Keep at most one short lead-in sentence before the question.
   const lead = qi > 0 && !isAsk(ss[qi - 1]) ? `${ss[qi - 1]} ` : ''
   const line = `${lead}${question}`
