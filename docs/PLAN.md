@@ -21,6 +21,11 @@ Deadline: Mon 5 Oct 2026, 12:29 IST (06:59 UTC).
   (intro, 2 behavioural, 2 technical, 1 HR).
 - Level: intern / junior / mid / senior.
 - Interviewer: Ananya or Aarav (the two avatars), mood friendly / neutral / tough.
+- **Video interview** (the 3D avatar, default) or **Phone screen** (voice only,
+  through `react-ai-voice-avatar/headless`). The same interview either way;
+  only the display changes. It is the first choice on the setup screen,
+  loading starts once it is picked, and it cannot change after that. The
+  avatar is lazy-loaded, so three.js only downloads for a video interview.
 - Questions from: the built-in bank, the candidate's own list (paste or upload
   .txt / .csv), or a pasted job description (Gemma writes the questions).
 - Number of questions and target answer length.
@@ -35,18 +40,30 @@ Deadline: Mon 5 Oct 2026, 12:29 IST (06:59 UTC).
   (target: 0).
 
 ### The report
-- Scores out of 100 for Fluency, Structure, Conciseness, Pace, each with its
-  formula shown.
-- Charts: answer length vs target, pace vs the 120-160 wpm band, filler words by
-  type, STAR grid (question x S/T/A/R), key points covered.
-- Per answer: transcript with fillers highlighted and the over-time part shaded,
-  numbers, the follow-up asked, the sample answer, and Gemma's review.
+- **No scores, no ratings, no percentages.** Only what was measured, plus their
+  own words:
+  - **Measured:** time per answer, words, words per minute, filler words by
+    type (each with how it was measured).
+  - **Quotes:** their answers, transcribed, with fillers highlighted and the
+    part past the target time shaded.
+  - **Plain comparisons where they help**, e.g. "Most behavioural answers aim
+    for about 2 minutes; this one was 3 min 40 s." or "A comfortable speaking
+    pace is about 120-160 words per minute; you spoke at 185."
+- Charts of the measured numbers only: answer length vs target, pace vs the
+  120-160 wpm band, filler words by type.
+- Per answer: the transcript, the numbers, the follow-up asked, and the sample
+  answer ("what a strong answer covers").
+- **STAR parts and missed key points are not measurements.** They appear only
+  if the Gemma 4 E2B eval (step 5.5) shows the review model gets them right;
+  otherwise they are left out, or shown as **"possible gaps"** in plain words
+  ("You may not have said how it turned out"), never as a tick grid or a
+  number. Run 5: Gemma 4 E2B marked all four STAR parts present in a rambling
+  answer, so as of now they are out.
 - **Deep review by Gemma 4 E2B** (Heavy mode, after the interview, on the
-  device): code review, what was missing compared with the sample answer, and
-  the weakest answer rewritten in the candidate's own words. STAR parts come
-  from code, not the model.
-- Progress across sessions (IndexedDB): fillers per minute, pace, STAR coverage,
-  answer length over time. Export and delete.
+  device): code review, possible gaps compared with the sample answer, and the
+  weakest answer rewritten in the candidate's own words.
+- Progress across sessions (IndexedDB): fillers per minute, pace, answer length
+  over time. Export and delete.
 
 ### Models (all open-weight, all in the browser)
 
@@ -69,8 +86,9 @@ q4f16) or loading Gemma 4 E2B fails. Light (q4) does not need `shader-f16`.
 - **Light:** Gemma 3 1B is the live interviewer. For weaker laptops or slow
   connections (4 min first load vs 14 min on my connection).
 
-In both modes, STAR parts and every score are computed by code (neither model
-judges STAR reliably). See [MODEL-TESTS.md](MODEL-TESTS.md), runs 4 and 5.
+In both modes, every number in the report is measured by code. Neither model
+judges STAR reliably yet, so STAR parts are left out unless step 5.5 shows
+otherwise. See [MODEL-TESTS.md](MODEL-TESTS.md), runs 4 and 5.
 
 ### Who does what
 
@@ -79,8 +97,8 @@ judges STAR reliably). See [MODEL-TESTS.md](MODEL-TESTS.md), runs 4 and 5.
 | Microphone, VAD, Whisper, Kokoro, avatar, barge-in | react-ai-voice-avatar |
 | Interview order, timing, what to probe, recovery | The app's engine (plain code) |
 | Follow-ups, reactions, rephrasing, questions from a JD | The mode's Gemma (app's own worker, through `onSubmit`) |
-| Code review, gaps, rewritten answer | Gemma 4 E2B (Heavy mode) |
-| Every number and score | Plain code, formulas shown |
+| Code review, possible gaps, rewritten answer | Gemma 4 E2B (Heavy mode) |
+| Every number (time, words, wpm, fillers) | Plain code, with how it was measured |
 
 ---
 
@@ -125,8 +143,9 @@ mic check -> greeting -> small talk (1 turn)
   -> "Any questions for me?" -> closing -> report
 ```
 
-The answer is finished after ~2.5 s of silence or when the candidate presses
-"I'm done".
+The answer is finished when the candidate presses "I'm done", or after a long
+pause, much longer than a gap between sentences (see [UX.md](UX.md); the
+length is tuned in step 4.3). A short silence never ends an answer.
 
 ### Follow-up angles (picked by rules)
 

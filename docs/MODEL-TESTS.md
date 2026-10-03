@@ -200,11 +200,14 @@ follow-up).
 
 ## Decisions so far
 
-- **Gemma 3 1B is the live interviewer**: follow-ups and reactions, guided by
-  rules, guarded by code.
-- **Code computes every score**: pace, fillers, length, STAR parts, key points.
-- **Judgement needs a bigger model.** Gemma 4 E2B (run 5) reviews code
-  correctly but still cannot be trusted with STAR parts; those stay in code.
+- **The mode's Gemma is the live interviewer**: follow-ups and reactions,
+  guided by rules, guarded by code.
+- **No scores.** Code measures time, words, words per minute and fillers;
+  the report shows those and quotes, nothing rated.
+- **STAR parts are out for now.** Gemma 4 E2B (run 5) reviews code correctly
+  but marked all four STAR parts present in a rambling answer. STAR goes into
+  the report only if more eval cases (step 5.5) show it gets them right, and
+  then as "possible gaps".
 - **Two modes, one download each.** Heavy: Gemma 4 E2B interviews and
   reviews. Light: Gemma 3 1B interviews. Only the chosen mode's model is
   downloaded.
@@ -214,4 +217,5 @@ follow-up).
 transformers.js keeps downloads in the Cache API, which in Chrome refuses any
 single entry of 256 MiB or more, so the 859 MB Gemma file is downloaded again on
 every visit. react-ai-voice-avatar works around this by caching model files in
-OPFS; the app's own Gemma worker needs the same.
+OPFS, and since 0.7.0 exports that cache (`react-ai-voice-avatar/model-cache`)
+for the app's own Gemma worker.

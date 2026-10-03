@@ -1,8 +1,8 @@
 # Interview Room: tasks
 
 The build broken into phases and steps, from [PLAN.md](PLAN.md). Each step is
-done, checked, reported, and then the next one starts. Deadline: Mon 5 Oct
-2026, 12:29 IST.
+done, checked, reported, and then the next one starts. Every step follows the
+rules in [UX.md](UX.md). Deadline: Mon 5 Oct 2026, 12:29 IST.
 
 What the package does for us (react-ai-voice-avatar 0.7.0), checked in its
 code:
@@ -18,18 +18,40 @@ code:
   store the package keeps its own models in, usable inside a worker.
 - Kokoro is fixed at fp32 in the package. Avatars: `avatarPreset: 'ananya' |
   'aarav'`.
+- **Gap for Video vs Phone:** `<AiVoiceAvatar>` runs its own copy of the hook
+  inside, and the 3D view that takes the hook's refs is not exported. The
+  workers belong to each hook instance and are terminated on unmount.
+  **Workaround (decided; the package is not changed this weekend):** Phone
+  screen runs the headless hook, Video runs `<AiVoiceAvatar>`, both fed the
+  same interview logic. The choice is the first thing on the setup screen,
+  loading starts once it is picked, and it cannot change after that. App
+  mounts the engine once (`EngineHost`) and keeps it mounted from that choice
+  to the end of the interview; screens change around it. An
+  `AiVoiceAvatarView` export is for after the challenge.
+- **Model caching (checked in 0.7.0):** both package workers (Whisper in the
+  ML worker, Kokoro in its own) point transformers.js at the OPFS cache
+  (`react-ai-voice-avatar-models`). A file is written in full, then a `.ok`
+  marker with its size; a file is only served if the marker exists and the
+  size matches. So a reload mid-download loses only the file that was not
+  finished. Not in OPFS: the Silero VAD files and the ONNX runtime WASM, which
+  load from jsdelivr (`@ricky0123/vad-web@0.0.30`, `onnxruntime-web@1.29.0`)
+  and rely on the browser's HTTP cache.
+- **No reduced-motion handling** in the package; the app has to provide it.
 
 ---
 
 ## Phase 0: Groundwork (Sat)
 
-- [ ] **0.1 Commit the docs and the package upgrade.** MODEL-TESTS.md runs 4
+- [x] **0.1 Commit the docs and the package upgrade.** MODEL-TESTS.md runs 4
   and 5, PLAN.md modes, this file, react-ai-voice-avatar 0.6.0 → 0.7.0. No
   co-authored-by line, no push.
-- [ ] **0.2 App shell.** Replace the Vite starter with four screens (home,
+- [x] **0.2 App shell.** Replace the Vite starter with four screens (home,
   setup, interview, report) and a small app state to move between them. Dev
   server with the cross-origin isolation headers (COOP/COEP) that
-  multithreaded WASM needs, so dev matches Render.
+  multithreaded WASM needs, so dev matches Render. Setup starts with Video
+  interview (default) or Phone screen; `EngineHost` is mounted once from that
+  choice to the end of the interview; the video engine is lazy-loaded. Glass
+  design per UX.md.
   Check: `npm run dev`, click through the empty screens, `npm run build` and
   `npm run lint` pass.
 
@@ -55,15 +77,22 @@ code:
   for both models in MODEL-TESTS.md.
 - [ ] **1.5 Heavy load failure falls back to Light.** If Gemma 4 E2B fails to
   load (memory, WebGPU error), say so and offer Light.
-- [ ] **1.6 First-load screen.** One progress view for VAD, Whisper, Kokoro
-  and the mode's Gemma, with sizes. Nothing downloads until the candidate
-  presses Start.
+- [ ] **1.6 Download progress.** The home page lists what will download and
+  how big before the candidate chooses; picking video or phone on the setup
+  screen starts the download, and the setup screen shows real progress per
+  model (VAD, Whisper, Kokoro, the mode's Gemma, the avatar for video) while
+  they fill in the rest. Says the models are kept after the
+  first time. Start is enabled once everything is loaded.
 
 ## Phase 2: Voice pipeline (Sat)
 
 - [ ] **2.1 Wire the hook.** `useAiVoiceAvatar` with `onSubmit` going to the
   Gemma worker, Kokoro on **fp32**, the avatar with the `ananya` / `aarav`
-  preset. Check that Kokoro loads fp32 (worker log "Initializing Kokoro-82M on
+  preset. In `EngineHost`: `PhoneEngine` runs the headless hook,
+  `VideoEngine` (lazy) runs `<AiVoiceAvatar>`; both take the same config and
+  expose the same controls (status, speak, interrupt, start/stop listening)
+  to the interview logic. Check that the engine is not remounted between
+  setup and interview (workers keep running). Check that Kokoro loads fp32 (worker log "Initializing Kokoro-82M on
   WebGPU (fp32)") and that the package does not fetch its own LLM.
 - [ ] **2.2 Check: empty `onSubmit` reply goes back to listening** (fixed in
   0.7.0). Return `undefined` for a mid-answer pause; the status must leave
@@ -81,8 +110,8 @@ code:
   backend and ML, with intent, key points, sample answer and written
   follow-ups.
 - [ ] **3.2 Engine state machine.** Plain code, no UI: greeting, one small-talk
-  turn, ask, collect the answer across pauses (done after ~2.5 s of silence or
-  "I'm done"), follow-up, reaction, next question, "any questions for me?",
+  turn, ask, collect the answer across pauses (done on "I'm done" or after a
+  long pause, never a short silence), follow-up, reaction, next question, "any questions for me?",
   closing. Testable without a microphone through `sendText`.
 - [ ] **3.3 Follow-up angle rules.** Short answer, "we" without "I", no
   outcome, missing key point, full STAR, technical edge case (PLAN.md section
@@ -111,26 +140,36 @@ code:
 
 ## Phase 5: Report (Sat evening)
 
-- [ ] **5.1 Metrics in code.** Words, duration, pace (wpm from the sum of
-  `speechMs` over the answer's stretches), fillers by type,
-  STAR parts, key points covered, over-time part. Unit-checked on the eval
-  fixtures.
-- [ ] **5.2 Scores.** Fluency, Structure, Conciseness, Pace out of 100, each
-  with its formula shown.
-- [ ] **5.3 Charts.** Answer length vs target, pace vs 120-160 wpm band,
-  fillers by type, STAR grid, key points.
-- [ ] **5.4 Per-answer section.** Transcript with fillers highlighted and the
-  over-time part shaded, numbers, the follow-up asked, sample answer, tip.
-- [ ] **5.5 Eval cases for the deep review.** Add "what is missing compared
-  with the sample answer" and "rewrite the weakest answer in their own words"
-  to the suite; run on Gemma 4 E2B (ask before downloading).
-- [ ] **5.6 Deep review (Heavy).** Code review, gaps vs the sample answer,
-  rewritten weakest answer. Light mode: decide first (PLAN.md open decision 2).
+No scores, ratings or percentages anywhere in the report (UX.md: report).
+
+- [ ] **5.1 Measurements in code.** Time per answer, words, words per minute
+  (from the sum of `speechMs` over the answer's stretches), filler words by
+  type, the part past the target time. Each with a one-line "how it was
+  measured". Unit-checked on the eval fixtures.
+- [ ] **5.2 Plain comparisons.** One short line where it helps, from stated
+  norms: "Most behavioural answers aim for about 2 minutes", "a comfortable
+  pace is about 120-160 words per minute". No verdicts beyond the comparison.
+- [ ] **5.3 Charts.** Measured numbers only: answer length vs target, pace vs
+  the 120-160 wpm band, fillers by type.
+- [ ] **5.4 Per-answer section.** Their answer quoted, fillers highlighted and
+  the over-time part shaded, the numbers, the follow-up asked, the sample
+  answer.
+- [ ] **5.5 Eval cases for the deep review.** Add to the suite: "possible gaps
+  compared with the sample answer", "rewrite the weakest answer in their own
+  words", and more STAR cases (answers with known parts present and missing).
+  Agree the pass bar for STAR before the run. Run on Gemma 4 E2B (ask before
+  downloading). STAR parts go into the report only if it passes; otherwise
+  they stay out, or appear only as "possible gaps" in plain words.
+- [ ] **5.6 Deep review (Heavy).** Code review, possible gaps vs the sample
+  answer, rewritten weakest answer, worded as suggestions, not measurements.
+  Light mode: decide first (PLAN.md open decision 2).
 
 ## Phase 6: Ship a first version (Sat evening)
 
 - [ ] **6.1 Offline after first load.** App files cached, models already in
-  OPFS; works with the network off.
+  OPFS; works with the network off. The VAD files and ONNX runtime WASM come
+  from jsdelivr, outside OPFS: self-host them with `vadAssetPath` and
+  `onnxWasmPath` so offline and the privacy meter do not depend on the CDN.
 - [ ] **6.2 Render.** `render.yaml` static site with COOP/COEP headers and a
   Deploy to Render button. Ask before creating the GitHub repo, pushing, or
   deploying.
@@ -139,8 +178,8 @@ code:
 
 ## Phase 7: P1 features (Sun morning)
 
-- [ ] **7.1 Progress history** in IndexedDB: fillers per minute, pace, STAR
-  coverage, answer length over time. Export and delete.
+- [ ] **7.1 Progress history** in IndexedDB: fillers per minute, pace,
+  answer length over time (measured numbers only). Export and delete.
 - [ ] **7.2 Own questions:** paste or upload .txt / .csv.
 - [ ] **7.3 Questions from a job description** (Gemma writes them; Heavy
   followed the one-per-line format, Light needs cleanup).
