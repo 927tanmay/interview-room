@@ -1,0 +1,44 @@
+<pasted_content id="70fb">
+yes, go ahead with 0.2. before you start, some ux rules for the whole app. put them in docs/UX.md and follow them in every step, not just this one. for 0.2 the screens can be placeholders, just get the structure right.
+
+- my friend is the user. no login, no clutter, no gamified stuff. calm and plain, like a real interview room.
+- first run downloads a lot. show what's being downloaded and how big before it starts, show real progress, and say it's cached after the first time. start loading while they're on the setup screen, not after they click start.
+- explain why we need the mic before the browser asks. if they say no, show what to do instead of a dead screen.
+- say clearly that nothing leaves the browser. it's true, so make it visible.
+- interview screen: always show one clear state (listening, thinking, speaking). show the question as text too, and show what whisper heard so they know they were understood.
+- people pause to think in interviews. don't cut them off after a short silence. give them a "done" button or a longer pause before it counts as finished, and a way to repeat the question, skip, or end early.
+- report: specific to what they said, quote their answers. no made up scores or percentages.
+- check for webgpu up front. if the browser or device can't run it, say so plainly on the home screen instead of failing halfway.
+- keyboard works everywhere, captions on by default, respect reduced motion for the avatar.
+</pasted_content id="70fb">
+
+---
+
+also add a voice only option on the setup screen, using react-ai-voice-avatar/headless. call it something like "phone screen" vs "video interview", avatar on by default. lazy load the avatar so three.js only loads when it's picked. both modes share the same interview logic, only the display changes.
+
+---
+
+don't change the package from this session. i do package changes myself in a separate session, and there's no time to refactor and publish before monday. i'll do the AiVoiceAvatarView export after the challenge.
+
+go with the workaround, with these changes:
+- make phone screen vs video interview the first choice on the setup screen, and only start loading models after it's picked. no switching after that.
+- the hook and <AiVoiceAvatar> both kill their workers on unmount, so mount the engine once at the app level and keep it mounted from setup through the end of the interview. screens change around it, it doesn't remount.
+- check in node_modules that 0.7.0 caches finished model files in OPFS, so a reload only loses the file that was mid download. tell me what you find.
+
+design, add this to docs/UX.md:
+- rounded everything: cards, buttons, inputs. one consistent radius scale, not random values.
+- premium, calm feel. soft glass panels (backdrop blur, light border, subtle shadow) over a soft gradient background, dark theme fits an interview room. one accent colour.
+- use the blur on a few big panels only, not every element. the gpu is busy with the models and the avatar.
+- text and captions must stay readable on glass, keep proper contrast. fall back to solid panels if backdrop-filter isn't supported or the user prefers reduced transparency.
+- no flashy animations. small, smooth transitions only, and respect reduced motion.
+
+---
+
+take the scores out of the plan. show only what was measured (time, words, wpm, filler counts) plus quotes, with a plain comparison where it helps, like "most behavioural answers aim for about 2 min". update docs/UX.md so the rule says no scores out of 100, not just no made up scores.
+star parts only go in if the gemma 4 e2b eval shows the review model gets them right. if it doesn't, leave them out or call them "possible gaps", not a measurement.
+
+also commit the changes till now, remove no co-authored by line
+
+---
+
+yes
