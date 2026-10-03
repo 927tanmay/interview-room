@@ -30,7 +30,7 @@ export function VoiceHost({
   visible: boolean
   onLoad: Dispatch<LoadAction>
 }) {
-  const { avatar, voice } = INTERVIEWERS[interviewer]
+  const { avatar, voice, name } = INTERVIEWERS[interviewer]
   const gemma = useRef<GemmaClient | null>(null)
   // What the package calls with each stretch of speech Whisper transcribed.
   // The interview engine collects it and always replies '' (keep listening);
@@ -97,7 +97,7 @@ export function VoiceHost({
           />
         </Suspense>
       ) : (
-        <PhoneVoice onLoad={onLoad} onSubmit={onSubmit} onInterrupt={onInterrupt} voice={voice} />
+        <PhoneVoice onLoad={onLoad} onSubmit={onSubmit} onInterrupt={onInterrupt} voice={voice} name={name} />
       )}
     </div>
   )

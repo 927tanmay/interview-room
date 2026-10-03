@@ -63,6 +63,10 @@ export type EngineSnapshot = {
   interviewerLine: string
   // Everything heard since the interviewer last asked something, across pauses.
   currentAnswer: string
+  // What is being answered right now, and when the candidate started (the
+  // first stretch of speech), for the answer timer. Null before they speak.
+  currentKind: ExchangeKind | null
+  answerStartedAt: number | null
   records: QuestionRecord[]
   smallTalk: Exchange | null
   candidateQuestions: Exchange | null
@@ -269,6 +273,8 @@ export class InterviewEngine {
       question: this.plan.questions[this.index] ?? null,
       interviewerLine: this.interviewerLine,
       currentAnswer: this.current ? answerText(this.current) : '',
+      currentKind: this.current?.kind ?? null,
+      answerStartedAt: this.current?.parts[0]?.at ?? null,
       records: this.records,
       smallTalk: this.smallTalk,
       candidateQuestions: this.candidateQuestions,

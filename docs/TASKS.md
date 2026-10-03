@@ -175,15 +175,16 @@ code:
   in `src/interview/settings.ts` and reach the engine through the session.
   Dev preview without downloads: `?dev=setup`. Still to try in Chrome: the
   real flow with Aarav and a single round.
-- [ ] **4.2 Interview room.** Avatar, question card, live captions, answer
-  timer (amber, then red past the target), progress dots, I'm done / Pause /
-  Skip / End.
-  **Phone screen display:** an illuminating, audio-reactive orb in the style
-  of Gemini Live and the package's `examples/voice-only`: glows with the
-  candidate's voice while listening and with the interviewer's while
-  speaking (`onAudioLevelChange`, source `mic` / `tts`), a slow calm pulse
-  while thinking. Accent colour only, GPU-light (CSS or one small canvas, no
-  blur stacks), static glow under reduced motion.
+- [x] **4.2 Interview room.** State in words, progress dots (answered,
+  skipped, current), answer timer per answer from the first words (amber from
+  80% of the target, red past it, announced once to screen readers), question
+  card, captions on by default with Hide captions, I'm done / Pause / Resume /
+  Repeat / Skip / End. Phone screen: audio-reactive orb (mic level while
+  listening, interviewer's voice while speaking, slow pulse while thinking,
+  dim while paused; transform and opacity only; still under reduced motion).
+  On phones the stage is capped so the question is on the first screen. Dev
+  preview with the real engine and no models: `?dev=room` (drive it with
+  `__room.heard(...)` in the console). Still to hear in Chrome.
 - [ ] **4.3 Milestone: first full spoken interview end to end** in Light,
   both video and phone. Note what breaks.
 

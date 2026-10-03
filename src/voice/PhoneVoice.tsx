@@ -1,5 +1,6 @@
 import { useEffect, type Dispatch } from 'react'
 import { useAiVoiceAvatar } from 'react-ai-voice-avatar/headless'
+import { Orb } from '../components/Orb'
 import type { LoadAction, LoadItemId } from './loading'
 import { registerVoiceControls, setAudioLevel, setVoice } from './voiceStore'
 import { onTranscript, type VoiceProps } from './voiceEvents'
@@ -12,7 +13,13 @@ const LABELS: Record<string, LoadItemId> = { asr: 'whisper', kokoro: 'kokoro' }
 // language model; replies come from the app's Gemma through VoiceHost.
 // Listening starts from the Start interview press (a user gesture), after the
 // setup screen has said why the microphone is needed.
-export function PhoneVoice({ onLoad, onSubmit, onInterrupt, voice: voiceId }: VoiceProps & { onLoad: Dispatch<LoadAction> }) {
+export function PhoneVoice({
+  onLoad,
+  onSubmit,
+  onInterrupt,
+  voice: voiceId,
+  name,
+}: VoiceProps & { onLoad: Dispatch<LoadAction>; name: string }) {
   const voice = useAiVoiceAvatar({
     ttsEngine: 'kokoro',
     ttsVoice: voiceId,
@@ -52,7 +59,7 @@ export function PhoneVoice({ onLoad, onSubmit, onInterrupt, voice: voiceId }: Vo
 
   return (
     <div className="stage stage-phone" aria-hidden="true">
-      <p className="placeholder">Voice only</p>
+      <Orb label={name} />
     </div>
   )
 }

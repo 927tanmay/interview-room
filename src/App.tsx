@@ -10,9 +10,10 @@ import { Interview } from './screens/Interview'
 import { Report } from './screens/Report'
 import { Setup } from './screens/Setup'
 
-// Dev-only panels (`?dev=gemma`, `?dev=setup`); dropped from production.
+// Dev-only panels (`?dev=gemma`, `?dev=setup`, `?dev=room`); dropped from production.
 const GemmaTest = import.meta.env.DEV ? lazy(() => import('./dev/GemmaTest')) : null
 const SetupPreview = import.meta.env.DEV ? lazy(() => import('./dev/SetupPreview')) : null
+const RoomPreview = import.meta.env.DEV ? lazy(() => import('./dev/RoomPreview')) : null
 const devPanel = import.meta.env.DEV ? new URLSearchParams(location.search).get('dev') : null
 
 function App() {
@@ -20,6 +21,13 @@ function App() {
   const [load, dispatchLoad] = useReducer(loadReducer, {})
   const device = useDeviceCheck()
 
+  if (RoomPreview && devPanel === 'room') {
+    return (
+      <Suspense fallback={null}>
+        <RoomPreview />
+      </Suspense>
+    )
+  }
   const DevPanel = devPanel === 'gemma' ? GemmaTest : devPanel === 'setup' ? SetupPreview : null
   if (DevPanel) {
     return (

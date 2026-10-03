@@ -1,10 +1,12 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { Display } from '../app/state'
+import { AnswerTimer } from '../components/AnswerTimer'
+import { ProgressDots } from '../components/ProgressDots'
 import { ScreenFrame } from '../components/ScreenFrame'
-import { useVoice, type VoiceStatus } from '../voice/voiceStore'
-import type { PauseReason } from '../interview/engine'
+import type { ExchangeKind, PauseReason } from '../interview/engine'
 import { interview, startInterview, useInterview } from '../interview/session'
 import type { InterviewSettings } from '../interview/settings'
+import { useVoice, type VoiceStatus } from '../voice/voiceStore'
 
 // One clear state, in words (UX.md: interview screen). 'idle' means the mic is
 // open and waiting for speech, which to the candidate is listening too.
@@ -23,9 +25,12 @@ const PAUSED: Record<PauseReason, string> = {
   mic: 'Paused because the microphone stopped. Reconnect it, then press Resume.',
 }
 
-// The interview runs here; the avatar or voice-only stage belongs to the
-// engine, which App keeps mounted beside this screen. Step 4.2 adds the timer
-// and progress dots.
+// Answers that count against the target length (not small talk or the
+// candidate's own questions).
+const TIMED: ExchangeKind[] = ['question', 'follow-up', 'probe', 'clarification']
+
+// The interview room (TASKS.md 4.2). The avatar or the phone-screen orb is
+// the voice engine's stage, which App keeps mounted beside this screen.
 export function Interview({
   display,
   settings,
@@ -38,6 +43,7 @@ export function Interview({
   const voice = useVoice()
   const state = useInterview()
   const started = useRef(false)
+  const [captions, setCaptions] = useState(true)
 
   useEffect(() => {
     if (started.current) return
@@ -47,32 +53,38 @@ export function Interview({
 
   const finished = state?.phase === 'done'
   // The engine is busy while Gemma words a follow-up; the package is idle then.
-  const label = state?.paused ? 'Paused' : state?.busy ? 'Thinking' : STATE_LABEL[voice.status]
-  const progress =
-    state && state.questionIndex >= 0 && state.questionIndex < state.total
-      ? `Question ${state.questionIndex + 1} of ${state.total}`
-      : null
+  const label = finished ? 'Finished' : state?.paused ? 'Paused' : state?.busy ? 'Thinking' : STATE_LABEL[voice.status]
+  const timed = !finished && !!state?.currentKind && TIMED.includes(state.currentKind)
 
   return (
     <ScreenFrame title={display === 'video' ? 'Video interview' : 'Phone screen'}>
-      <p className="interview-meta">
+      <div className="room-bar">
         <span className="state" role="status">
-          {finished ? 'Finished' : label}
+          {label}
         </span>
-        {progress && <span className="muted">{progress}</span>}
-      </p>
+        {state && (
+          <ProgressDots
+            total={state.total}
+            index={finished ? state.total : state.questionIndex}
+            outcomes={state.records.map((r) => r.outcome)}
+          />
+        )}
+        {timed && (
+          <AnswerTimer startedAt={state.answerStartedAt} targetMinutes={settings.answerMinutes} paused={!!state.paused} />
+        )}
+      </div>
 
       {voice.micError && (
         <div className="notice">
           <p className="notice-title">The microphone isn't available</p>
           <p>
             Allow microphone access for this page (the icon in the address bar), check that a
-            microphone is connected, then reload. ({voice.micError})
+            microphone is connected, then press Resume. ({voice.micError})
           </p>
         </div>
       )}
 
-      {state?.paused && (
+      {state?.paused && !voice.micError && (
         <div className="notice">
           <p>{PAUSED[state.paused]}</p>
         </div>
@@ -84,30 +96,30 @@ export function Interview({
         </p>
       ))}
 
-      {state?.question && (
-        <section aria-labelledby="question-title">
-          <h2 id="question-title" className="label">
-            Question
-          </h2>
-          <p className="question">{state.question.question}</p>
-        </section>
-      )}
-
-      <section aria-labelledby="said-title">
-        <h2 id="said-title" className="label">
-          Interviewer
+      <section className="question-card" aria-labelledby="question-title">
+        <h2 id="question-title" className="label">
+          {state?.question ? `Question ${state.questionIndex + 1}` : finished ? 'All done' : 'Warming up'}
         </h2>
-        <p className="said">{state?.interviewerLine}</p>
-      </section>
-
-      <section aria-labelledby="heard-title">
-        <h2 id="heard-title" className="label">
-          What I heard
-        </h2>
-        <p className={state?.currentAnswer ? 'heard' : 'heard placeholder'} aria-live="polite">
-          {state?.currentAnswer || 'Your words appear here as you speak. Take your time: pauses are fine.'}
+        <p className="question">
+          {state?.question?.question ??
+            (finished ? 'Thanks for practicing. Your report is ready.' : 'A quick hello before the first question.')}
         </p>
       </section>
+
+      {captions && (
+        <section className="captions" aria-label="Captions">
+          <div>
+            <h3 className="label">Interviewer</h3>
+            <p className="said">{state?.interviewerLine}</p>
+          </div>
+          <div>
+            <h3 className="label">What I heard</h3>
+            <p className={state?.currentAnswer ? 'heard' : 'heard placeholder'} aria-live="polite">
+              {state?.currentAnswer || 'Your words appear here as you speak. Take your time: pauses are fine.'}
+            </p>
+          </div>
+        </section>
+      )}
 
       <div className="actions interview-controls">
         {finished ? (
@@ -150,6 +162,9 @@ export function Interview({
             </button>
           </>
         )}
+        <button type="button" className="quiet" aria-pressed={captions} onClick={() => setCaptions((c) => !c)}>
+          {captions ? 'Hide captions' : 'Show captions'}
+        </button>
       </div>
     </ScreenFrame>
   )

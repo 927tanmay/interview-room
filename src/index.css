@@ -28,6 +28,12 @@
   --accent: #8fb4ff;
   --accent-text: #0d1320;
   --accent-soft: rgba(143, 180, 255, 0.14);
+  --accent-deep: #34548f;
+  --accent-glow: rgba(143, 180, 255, 0.55);
+
+  /* Status colours for the answer timer only (not accents) */
+  --warn: #f2c46b;
+  --over: #ff9a8f;
 
   /* Radius scale: the only radius values in the app */
   --radius-sm: 8px;
@@ -678,16 +684,21 @@ progress::-moz-progress-bar {
   aspect-ratio: 1;
 }
 
-.interview-meta {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin: 0 0 4px;
-}
+/* On a phone the stage sits above the question; keep it short enough that
+   the question is on the first screen. */
+@media (max-width: 760px) {
+  .stage {
+    aspect-ratio: auto;
+    height: min(42vh, 320px);
+  }
 
-.interview-meta .state {
-  margin-bottom: 0;
+  .stage-phone {
+    height: 200px;
+  }
+
+  .stage .orb {
+    width: 110px;
+  }
 }
 
 .said {
@@ -720,6 +731,192 @@ progress::-moz-progress-bar {
 
 .interview-controls {
   justify-content: flex-start;
+}
+
+button.quiet {
+  margin-left: auto;
+  background: transparent;
+  border-color: transparent;
+  color: var(--muted);
+}
+
+button.quiet:hover {
+  color: var(--text);
+  background: var(--surface);
+}
+
+/* Interview room: state, progress, timer */
+
+.room-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin-bottom: 18px;
+}
+
+.room-bar .state {
+  margin-bottom: 0;
+}
+
+.dots {
+  display: flex;
+  gap: 6px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-pill);
+  border: 1.5px solid var(--border);
+}
+
+.dot-done {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.dot-skipped {
+  border-style: dashed;
+  border-color: var(--muted);
+}
+
+.dot-current {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.answer-timer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.95rem;
+}
+
+.timer-bar {
+  width: 90px;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-hover);
+  overflow: hidden;
+}
+
+.timer-bar span {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  transition: width 250ms linear;
+}
+
+.timer-near .timer-text {
+  color: var(--warn);
+}
+
+.timer-near .timer-bar span {
+  background: var(--warn);
+}
+
+.timer-over .timer-text {
+  color: var(--over);
+  font-weight: 600;
+}
+
+.timer-over .timer-bar span {
+  background: var(--over);
+}
+
+/* Interview room: question and captions */
+
+.question-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px 18px;
+}
+
+.question-card .label {
+  margin-top: 0;
+}
+
+.question-card .question {
+  margin: 0;
+}
+
+.captions {
+  display: grid;
+  gap: 4px;
+}
+
+.captions h3 {
+  font-size: 0.8rem;
+}
+
+/* Phone screen orb */
+
+.orb-wrap {
+  display: grid;
+  justify-items: center;
+  gap: 18px;
+  width: 100%;
+}
+
+.orb {
+  --level: 0;
+  position: relative;
+  width: min(55%, 220px);
+  aspect-ratio: 1;
+}
+
+.orb-glow,
+.orb-core {
+  position: absolute;
+  border-radius: 50%;
+  transition: opacity 300ms ease;
+}
+
+.orb-glow {
+  inset: -28%;
+  background: radial-gradient(circle, var(--accent-glow) 0%, transparent 62%);
+  opacity: calc(0.35 + var(--level) * 0.65);
+  transform: scale(calc(0.92 + var(--level) * 0.28));
+}
+
+.orb-core {
+  inset: 0;
+  background: radial-gradient(circle at 35% 30%, #dbe7ff 0%, var(--accent) 42%, var(--accent-deep) 100%);
+  transform: scale(calc(0.95 + var(--level) * 0.1));
+}
+
+.orb-speaking .orb-glow {
+  opacity: calc(0.55 + var(--level) * 0.45);
+}
+
+.orb-thinking .orb-core,
+.orb-thinking .orb-glow {
+  animation: orb-breathe 2.4s ease-in-out infinite;
+}
+
+.orb-loading,
+.orb-paused {
+  opacity: 0.45;
+}
+
+@keyframes orb-breathe {
+  50% {
+    transform: scale(1.05);
+    opacity: 0.85;
+  }
+}
+
+.orb-label {
+  color: var(--muted);
+  margin: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {
