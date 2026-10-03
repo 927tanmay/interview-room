@@ -1,0 +1,5 @@
+commit and push the render yml first
+
+---
+
+the render.yaml still has plan: free, that's what render rejects. remove just that line, nothing else. commit, push, tell me when it's up.
