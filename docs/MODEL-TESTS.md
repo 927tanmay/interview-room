@@ -198,6 +198,30 @@ follow-up).
 | STAR judging | 0 / 2 | 1 / 2 (calls everything true) |
 | JD questions in the asked format | No | Yes |
 
+## Run 6: Gemma 3 1B in the app's worker, with the OPFS cache (3 Oct 2026)
+
+The app's own Gemma worker (`src/gemma/gemma.worker.ts`), tested through the
+dev panel (`?dev=gemma`) in the Claude desktop browser pane (Chromium 152) on
+the M4. Same model and dtype as runs 1 to 4; the cache is
+`createModelCache()` from react-ai-voice-avatar 0.7.0.
+
+| | Result |
+|---|---|
+| First load (880 MB download) | 269.8 s, then a 1-token warm-up of 319 ms |
+| Files kept in OPFS | 6, all with completion markers, 880 MB (weights 859 MB, tokenizer 20 MB, configs) |
+| Reload, load from OPFS | **2.9 s**, warm-up 212 ms |
+| Reply, 80 tokens | 1.8 to 2.7 s; first text after 212 ms, then about a token every 30 ms |
+| Stop mid-reply | Stopped at 605 ms after 23 tokens, flagged `stopped` |
+| Runtime | `onnxruntime-web@1.31.0-dev` asyncify WASM from jsDelivr (26.9 MB), not in OPFS or the Cache API |
+
+The cached model gave the same greedy reply word for word as the downloaded
+one. transformers.js reports progress for cache reads as well, so the
+progress screen has to tell a cache read from a download.
+
+This browser pane gave the origin a storage quota of 2.6 GB: enough for
+Light, not for Heavy's 3.13 GB. Desktop Chrome normally allows much more,
+but Heavy needs a quota check before downloading (TASKS.md, H.1).
+
 ## Decisions so far
 
 - **The mode's Gemma is the live interviewer**: follow-ups and reactions,

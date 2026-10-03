@@ -1,4 +1,4 @@
-import { useReducer } from 'react'
+import { lazy, Suspense, useReducer } from 'react'
 import { appReducer, initialState, isEngineMounted } from './app/state'
 import { useDeviceCheck } from './app/useDeviceCheck'
 import { PrivacyNote } from './components/PrivacyNote'
@@ -8,9 +8,25 @@ import { Interview } from './screens/Interview'
 import { Report } from './screens/Report'
 import { Setup } from './screens/Setup'
 
+// Dev-only test panels (`?dev=gemma`); the import is dropped from production.
+const GemmaTest = import.meta.env.DEV ? lazy(() => import('./dev/GemmaTest')) : null
+const devPanel = import.meta.env.DEV ? new URLSearchParams(location.search).get('dev') : null
+
 function App() {
   const [state, dispatch] = useReducer(appReducer, initialState)
   const device = useDeviceCheck()
+
+  if (GemmaTest && devPanel === 'gemma') {
+    return (
+      <div className="app">
+        <main>
+          <Suspense fallback={null}>
+            <GemmaTest />
+          </Suspense>
+        </main>
+      </div>
+    )
+  }
 
   return (
     <div className={`app app--${state.screen}`}>

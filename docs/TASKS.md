@@ -4,6 +4,11 @@ The build broken into phases and steps, from [PLAN.md](PLAN.md). Each step is
 done, checked, reported, and then the next one starts. Every step follows the
 rules in [UX.md](UX.md). Deadline: Mon 5 Oct 2026, 12:29 IST.
 
+**Order: Light first.** The whole app is built and checked end to end with
+Light (Gemma 3 1B) through phases 1 to 6. Heavy (Gemma 4 E2B) and the deep
+review come after, in phase H, so the 3.13 GB model is only downloaded once
+the rest works.
+
 What the package does for us (react-ai-voice-avatar 0.7.0), checked in its
 code:
 - Passing `onSubmit` stops it downloading its own LLM.
@@ -64,20 +69,20 @@ code:
 - [x] **1.2 Home page.** Pick Light (Gemma 3 1B, 859 MB) or Heavy (Gemma 4
   E2B, 3.11 GB), with sizes and what each mode gives. Unsupported Heavy falls
   back to Light and says why.
-- [ ] **1.3 Gemma worker.** A Web Worker that loads only the chosen mode's
+- [x] **1.3 Gemma worker.** A Web Worker that loads only the chosen mode's
   model through `pipeline('text-generation')` (the eval page's loader),
   generates with greedy decoding and can be stopped. Messages: load, progress,
-  generate, result, error.
-  Check: a test button on the home page gets a reply in each mode.
-- [ ] **1.4 OPFS cache for Gemma.** The Cache API refuses entries over 256 MiB,
+  generate, result, error. Test panel: `?dev=gemma` (dev only).
+  Checked with Light (MODEL-TESTS.md, run 6); Heavy is checked in phase H.
+- [x] **1.4 OPFS cache for Gemma.** The Cache API refuses entries over 256 MiB,
   so Gemma is downloaded on every visit without this. In the Gemma worker:
   `env.useCustomCache = true; env.customCache = createModelCache()` from
   `react-ai-voice-avatar/model-cache`, guarded by `isModelCacheSupported()`.
-  Check: second load makes no Hugging Face model requests; note warm load time
-  for both models in MODEL-TESTS.md.
-- [ ] **1.5 Heavy load failure falls back to Light.** If Gemma 4 E2B fails to
-  load (memory, WebGPU error), say so and offer Light.
-- [ ] **1.6 Download progress.** The home page lists what will download and
+  Checked with Light: all 6 files kept (880 MB), reload loads in 2.9 s instead
+  of 270 s. Heavy in phase H.
+- [ ] **1.6 Download progress.** Note: transformers.js reports progress for
+  files read from the OPFS cache too, so a cached model must read "loading
+  from this device", not "downloading". The home page lists what will download and
   how big before the candidate chooses; picking video or phone on the setup
   screen starts the download, and the setup screen shows real progress per
   model (VAD, Whisper, Kokoro, the mode's Gemma, the avatar for video) while
@@ -121,8 +126,9 @@ code:
   ending in "." or phrased as an instruction ("Describe…", "Walk me
   through…"), and reject a reaction that is really a new question. Written
   fallback line per angle.
-- [ ] **3.5 Re-run the evals with the new guard on both models.** Ask before
-  downloading (859 MB + 3.11 GB). Record the pass rate in MODEL-TESTS.md.
+- [ ] **3.5 Re-run the evals with the new guard on Light.** The eval page
+  does not use the OPFS cache, so this downloads 880 MB again: ask first.
+  Record the pass rate in MODEL-TESTS.md. (Heavy: phase H.)
 - [ ] **3.6 Recovery.** Silence at 12 s and 25 s, "repeat that", "what do you
   mean", "I don't know", garbled transcript, pause / stop, lost microphone,
   Gemma failure mid-interview (carry on with written lines), tab hidden.
@@ -135,8 +141,8 @@ code:
 - [ ] **4.2 Interview room.** Avatar, question card, live captions, answer
   timer (amber, then red past the target), progress dots, I'm done / Pause /
   Skip / End.
-- [ ] **4.3 Milestone: first full spoken interview end to end** in both modes.
-  Note what breaks.
+- [ ] **4.3 Milestone: first full spoken interview end to end** in Light,
+  both video and phone. Note what breaks.
 
 ## Phase 5: Report (Sat evening)
 
@@ -154,15 +160,7 @@ No scores, ratings or percentages anywhere in the report (UX.md: report).
 - [ ] **5.4 Per-answer section.** Their answer quoted, fillers highlighted and
   the over-time part shaded, the numbers, the follow-up asked, the sample
   answer.
-- [ ] **5.5 Eval cases for the deep review.** Add to the suite: "possible gaps
-  compared with the sample answer", "rewrite the weakest answer in their own
-  words", and more STAR cases (answers with known parts present and missing).
-  Agree the pass bar for STAR before the run. Run on Gemma 4 E2B (ask before
-  downloading). STAR parts go into the report only if it passes; otherwise
-  they stay out, or appear only as "possible gaps" in plain words.
-- [ ] **5.6 Deep review (Heavy).** Code review, possible gaps vs the sample
-  answer, rewritten weakest answer, worded as suggestions, not measurements.
-  Light mode: decide first (PLAN.md open decision 2).
+(The deep review is Heavy only: phase H.)
 
 ## Phase 6: Ship a first version (Sat evening)
 
@@ -175,6 +173,28 @@ No scores, ratings or percentages anywhere in the report (UX.md: report).
   deploying.
 - [ ] **6.3 Test the deployed link on the M2 Pro** (friend's laptop): mode
   picked, load time, reply speed, memory. Record in MODEL-TESTS.md.
+
+## Phase H: Heavy mode and the deep review (after the Light build works)
+
+- [ ] **H.1 Heavy in the worker.** Load Gemma 4 E2B (3.13 GB, ask before
+  downloading), a reply, reload from the OPFS cache, warm load time. Storage
+  quota matters here: the Claude browser pane gave this origin 2.6 GB, too
+  little to keep Heavy. Check `navigator.storage.estimate()` before the
+  download and, if the quota is too small, say so (it will download every
+  visit) or ask for persistent storage.
+- [ ] **H.2 Heavy load failure falls back to Light.** If Gemma 4 E2B fails to
+  load (memory, WebGPU error, no space), say so and offer Light.
+- [ ] **H.3 Guard evals on Heavy** with the step 3.4 guard; record in
+  MODEL-TESTS.md.
+- [ ] **H.4 Eval cases for the deep review.** Add to the suite: "possible gaps
+  compared with the sample answer", "rewrite the weakest answer in their own
+  words", and more STAR cases (answers with known parts present and missing).
+  Agree the pass bar for STAR before the run. Run on Gemma 4 E2B (ask before
+  downloading). STAR parts go into the report only if it passes; otherwise
+  they stay out, or appear only as "possible gaps" in plain words.
+- [ ] **H.5 Deep review (Heavy).** Code review, possible gaps vs the sample
+  answer, rewritten weakest answer, worded as suggestions, not measurements.
+  Light mode: decide first (PLAN.md open decision 2).
 
 ## Phase 7: P1 features (Sun morning)
 
