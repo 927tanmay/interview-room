@@ -1,0 +1,51 @@
+<pasted_content id="70fb">
+hey, so i'm building something for the dev hacktoberfest weekend challenge, "build for a friend". deadline is monday 5 oct, 12:29 pm ist.
+
+my friend is job hunting and practising interviews alone doesn't really work. so i'm making interview room, a mock interviewer that actually talks to you. you speak, it listens, asks a follow up on what you said, and at the end gives you a proper report. it's for software engineers, with frontend, backend and ml tracks, and behavioural, technical and hr rounds.
+
+everything runs in the browser, nothing gets uploaded. silero vad, whisper for hearing, gemma as the interviewer, kokoro for the voice, and a 3d avatar that lip syncs. it's built on react-ai-voice-avatar, which is my own npm package. this app is new though, started it this weekend.
+
+i did the planning and the first model tests earlier today in another chat with claude. i'm not sharing that one because it has my personal notes in it, but everything we worked out is written down and committed: read docs/PLAN.md and docs/MODEL-TESTS.md first. the test page is evals/interviewer.html. this session picks up from there.
+
+what i found so far: gemma 3 1b is good at follow ups when the app tells it what to ask about, but it can't judge answers or check code at all. so i want to try gemma 4 e2b for the review part.
+
+first thing:
+run the eval suite on gemma 3 1b again to make sure the results hold. then run it on gemma 4 e2b (onnx-community/gemma-4-E2B-it-ONNX, q4f16, around 3.1 gb), but ask me before you download it. it might need a different way to load than the normal text-generation pipeline, check that. then tell me which one should do the live interview and which one should do the review after. put the results in docs/MODEL-TESTS.md.
+
+two bugs in my package i'm fixing on my side, just work around them for now:
+1. whisper gets called without chunk_length_s, so if someone talks for more than 30 sec without a pause it gets cut off
+2. if onSubmit returns nothing, the hook gets stuck on "thinking" and doesn't go back to listening
+
+how i like to work:
+- one step at a time. do it, tell me what happened, then stop
+- ask me things in normal text, no popup questions
+- ask before downloading anything else, before pushing, and before opening a PR
+- no co-authored-by lines in commits
+- don't ask me for api keys, i'll set them myself
+- keep kokoro on fp32
+</pasted_content id="70fb">
+
+---
+
+yes m2 pro is my friend laptop mine is m4.
+yes please go ahead and download and check
+
+---
+
+let's keep both the version light and heavy with only downloading the model that's required.
+
+---
+
+app will let the user on home page where the user can decide which one to choose and if system is not supported it will go back to light
+
+---
+
+okay lets break down the tasks in steps and phases and then we will implement the phases step by step
+
+---
+
+before going ahead check the 0.7.0 version of the package and see if it fits for our app or need any fixes or upgrades?
+
+---
+
+yes
