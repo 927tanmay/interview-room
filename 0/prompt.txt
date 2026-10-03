@@ -1,0 +1,20 @@
+yes i ended the interview,
+
+---
+
+<pasted_content id="70fb">
+basic demo works, now i want it on github and render. one step at a time, report after each.
+
+step 1, pre-push check, don't push yet:
+- .gitignore covers .env, node_modules, dist, .claude/settings.local.json, and any downloaded model files. nothing over 50 mb in the repo or its history (github rejects 100 mb files).
+- check the whole history for secrets or keys.
+- check what entire needs: should .entire/ be committed or ignored? read the entire docs / entire status, don't guess.
+- add a short readme: what it is, the demo link (placeholder for now), how to run locally, the models it uses, that everything runs in the browser. add an mit license.
+- tell me what you found and what you changed, then stop.
+
+step 2, push: when i say go, create a public repo 927tanmay/interview-room and push main. entire's pre-push hook should push the checkpoints too, confirm it did.
+
+step 3, render: add a render.yaml for a static site (npm ci && npm run build, publish dist). set the cross-origin isolation headers in it, the same ones as the vite dev server, plus an spa rewrite to index.html if we have routes. tell me exactly what to click in the render dashboard, i'll connect it myself. no api keys needed.
+
+step 4, once it's live: check the deployed url. headers present, crossOriginIsolated is true, models download from hugging face under those headers, mic works over https, a full interview runs. report anything that differs from local.
+</pasted_content id="70fb">
