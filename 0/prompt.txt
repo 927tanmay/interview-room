@@ -1,0 +1,11 @@
+<pasted_content id="70fb">
+before pushing, i want the email out of the existing 16 checkpoints. nothing is pushed yet so let's clean them now.
+
+- back up the repo first (a full copy of the folder or a mirror clone).
+- rewrite only the refs/entire/* refs to replace my email with [REDACTED_EMAIL]. git filter-repo --replace-text limited to those refs should work, but check how entire stores them first. ask me before installing git-filter-repo.
+- don't touch main or any normal commits.
+- after: show me the email appears in zero refs, and that entire checkpoint list and explain still work. also check that the checkpoint ids in the commit trailers still match.
+- redaction is on in .entire/settings.json now, so new checkpoints should already be clean. confirm that on the next one.
+- also give me a short list of what the screenshots show, and flag anything private.
+- then stop. once it's clean, the checkpoints go to the public repo with the code, and i'll take them down after the hacktoberfest results.
+</pasted_content id="70fb">
