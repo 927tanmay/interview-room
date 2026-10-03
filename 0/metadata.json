@@ -1,0 +1,98 @@
+{
+  "cli_version": "0.11.3",
+  "checkpoint_id": "01M41Q1MACBZQ93ZGYQ85J1DEF",
+  "session_id": "e0972c9d-f551-419e-8995-044a83f59546",
+  "strategy": "manual-commit",
+  "created_at": "2026-10-03T20:24:48.537118Z",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "save_step_count": 2,
+  "files_touched": [
+    "docs/PLAN.md",
+    "docs/TASKS.md",
+    "src/engine/EngineHost.tsx",
+    "src/engine/engineEvents.ts",
+    "src/engine/voiceStore.ts",
+    "src/index.css",
+    "src/interview/angles.ts",
+    "src/interview/bank.ts",
+    "src/interview/engine.ts",
+    "src/interview/guard.ts",
+    "src/interview/lines.ts",
+    "src/interview/placeholderBrain.ts",
+    "src/interview/prompts.ts",
+    "src/interview/session.ts",
+    "src/interview/writer.ts",
+    "src/screens/Interview.tsx"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-5-5",
+  "turn_id": "0fd21f821ea6",
+  "checkpoint_transcript_start": 2477,
+  "transcript_lines_at_start": 2477,
+  "compact_transcript_start": 470,
+  "token_usage": {
+    "input_tokens": 40,
+    "cache_creation_tokens": 546852,
+    "cache_read_tokens": 10752451,
+    "output_tokens": 37307,
+    "api_call_count": 20
+  },
+  "session_metrics": {
+    "turn_count": 22
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-10-03T20:24:48.437046Z",
+    "agent_lines": 418,
+    "agent_removed": 83,
+    "human_added": 26,
+    "human_modified": 20,
+    "human_removed": 0,
+    "total_committed": 454,
+    "total_lines_changed": 547,
+    "agent_percentage": 91.59049360146253,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 556,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".claude/launch.json": 17,
+        ".claude/settings.json": 90,
+        "src/interview/bank.ts": 104,
+        "src/interview/engine.ts": 305,
+        "src/interview/lines.ts": 40
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 107,
+      "user_lines_removed": 0,
+      "agent_lines_added": 449,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".claude/launch.json": 17,
+        ".claude/settings.json": 90
+      }
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 130,
+      "user_lines_removed": 10,
+      "agent_lines_added": 900,
+      "agent_lines_removed": 93,
+      "user_added_per_file": {
+        ".claude/launch.json": 17,
+        ".claude/settings.json": 90,
+        "src/interview/engine.ts": 23
+      },
+      "user_removed_per_file": {
+        "src/interview/engine.ts": 10
+      }
+    }
+  ]
+}

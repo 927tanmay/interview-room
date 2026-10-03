@@ -1,0 +1,5 @@
+lets us take a moment and plan what are we doing extra for system design questions we need to limit the scope as well
+
+---
+
+add this in plan we will come back later to system design part, let's just jump to our next set of tasks. lets move to engine state  and prompts and guards
