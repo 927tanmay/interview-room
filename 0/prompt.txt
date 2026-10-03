@@ -1,0 +1,45 @@
+<pasted_content id="70fb">
+{
+  "phase": "done",
+  "notes": [],
+  "smallTalk": {
+    "kind": "small-talk",
+    "said": "Hi, I'm Ananya. Thanks for joining. Before we start, how's your day going?",
+    "answer": [
+      {
+        "t": 0,
+        "speechMs": 1344,
+        "text": "My day is going great."
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "b-feedback",
+      "outcome": "answered",
+      "seconds": 62,
+      "exchanges": [
+        {
+          "kind": "question",
+          "said": "Thanks. Let's get started. Tell me about a time you received difficult feedback.",
+          "answer": [
+            {
+              "t": 46.3,
+              "speechMs": 35808,
+              "text": "There are many times I have received the physical feedbacks somehow when I am able to manage team and some of the team members are not performing as expected. But I am doing great in my whole features and the team is performing really well but due to some members I have to receive the difficult feedbacks. Then I took them constructively found out the solutions like what the members were missing and then I moved on."
+            }
+          ]
+        },
+        {
+          "kind": "follow-up",
+          "said": "That sounds like a challenging situation. How did you handle those difficult feedback sessions?",
+          "angle": "outcome",
+          "byGemma": true,
+          "answer": []
+        }
+      ]
+    }
+  ],
+  "candidateQuestions": null
+}
+</pasted_content id="70fb">
