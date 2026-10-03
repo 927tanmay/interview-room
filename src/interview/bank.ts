@@ -12,6 +12,39 @@ export type Round = 'behavioural' | 'technical' | 'system-design' | 'hr'
 export type Track = 'frontend' | 'backend' | 'ml'
 export type Level = 'intern' | 'junior' | 'mid' | 'senior'
 
+// What a strong answer covers, as short points the candidate checks their own
+// answer against in the self-review (covered / partly / missed). The app never
+// marks them; the tag lets the report group their marks across answers ("you
+// left out the result in 3 of 4 stories").
+export type PointTag =
+  | 'situation'
+  | 'own-role'
+  | 'action'
+  | 'result'
+  | 'lesson'
+  | 'example'
+  | 'concept'
+  | 'edge-case'
+  | 'trade-off'
+  | 'motivation'
+  | 'framing'
+
+export const POINT_TAGS: Record<PointTag, string> = {
+  situation: 'Situation',
+  'own-role': 'Your role',
+  action: 'What you did',
+  result: 'Result',
+  lesson: 'Lesson',
+  example: 'Example',
+  concept: 'Core idea',
+  'edge-case': 'Edge case',
+  'trade-off': 'Trade-off',
+  motivation: 'Motivation',
+  framing: 'Framing',
+}
+
+export type StrongPoint = { tag: PointTag; text: string }
+
 export type BankQuestion = {
   id: string
   round: Round
@@ -25,6 +58,10 @@ export type BankQuestion = {
   sampleAnswer: string
   // Written follow-ups, spoken when Gemma's line is rejected by the guard.
   followUps: string[]
+  // 3 to 5 points a strong answer covers, which the candidate marks covered,
+  // partly or missed in the self-review. Every question has them except
+  // system design, which is parked.
+  points?: StrongPoint[]
   // System design only: run as a conversation, not one long answer. The
   // interviewer answers clarifying questions from `assumptions` and moves the
   // discussion on with `probes`, in order (design, deep dive, scale).
@@ -52,6 +89,13 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'Sets the scene in a sentence (what broke, when it was due), says what they owned, walks through the concrete steps they took to narrow it down, and ends with the result and what they would do earlier next time.',
     followUps: ['What was the first thing you checked, and why that?', 'How did it turn out in the end?'],
+    points: [
+      { tag: 'situation', text: 'What broke, and when it was due' },
+      { tag: 'own-role', text: 'What you personally owned' },
+      { tag: 'action', text: 'How you narrowed it down, step by step' },
+      { tag: 'result', text: 'How it turned out' },
+      { tag: 'lesson', text: 'What you would do earlier next time' },
+    ],
   },
   {
     id: 'b-improved',
@@ -68,6 +112,12 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'Names the problem and how they knew it was a problem, explains what they personally changed and why that option over others, and gives a before-and-after number.',
     followUps: ['What did you do yourself, as opposed to the team?', 'How did you know it actually worked?'],
+    points: [
+      { tag: 'situation', text: 'What was not working, and how you knew' },
+      { tag: 'own-role', text: 'The part you personally owned' },
+      { tag: 'action', text: 'What you changed, and why that option' },
+      { tag: 'result', text: 'A before-and-after result, ideally a number' },
+    ],
   },
   {
     id: 'b-conflict',
@@ -84,6 +134,13 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'Describes a real technical or process disagreement, shows they understood the other view, explains how they moved it to evidence or a quick experiment, and what was decided. Ends on the working relationship, not on being right.',
     followUps: ['What was their argument, in their words?', 'Looking back, would you handle it differently?'],
+    points: [
+      { tag: 'situation', text: 'What the disagreement was about' },
+      { tag: 'action', text: 'Their view, and that you understood it' },
+      { tag: 'action', text: 'How you moved it to evidence or a quick test' },
+      { tag: 'result', text: 'What was decided' },
+      { tag: 'framing', text: 'The working relationship afterwards, not being right' },
+    ],
   },
   {
     id: 'b-mistake',
@@ -100,6 +157,12 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'Picks a real mistake with real consequences, owns it without blaming others, says how they fixed or contained it, and names a concrete habit they changed because of it.',
     followUps: ['What do you do differently now because of it?', 'How did you find out it had gone wrong?'],
+    points: [
+      { tag: 'situation', text: 'A real mistake with real consequences' },
+      { tag: 'own-role', text: 'Owning it without blaming others' },
+      { tag: 'action', text: 'How you fixed or contained it' },
+      { tag: 'lesson', text: 'A concrete habit you changed because of it' },
+    ],
   },
   {
     id: 'b-learn-fast',
@@ -116,6 +179,12 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'Says what they needed to learn and the time limit, describes a specific learning approach (docs, a small spike, asking someone), and shows they used it for real by the deadline.',
     followUps: ['What did you build first to try it out?', 'Who or what helped you most?'],
+    points: [
+      { tag: 'situation', text: 'What you had to learn, and the time limit' },
+      { tag: 'action', text: 'How you learned it: docs, a small spike, asking someone' },
+      { tag: 'result', text: 'Using it for real by the deadline' },
+      { tag: 'lesson', text: 'What you would do the same way again' },
+    ],
   },
   {
     id: 'b-feedback',
@@ -132,6 +201,12 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'Shares real feedback that stung, describes asking questions to understand it, and gives a concrete change they made and how they checked it worked.',
     followUps: ['What did you change after hearing it?', 'How did you feel when you first heard it?'],
+    points: [
+      { tag: 'situation', text: 'What the feedback was, and who gave it' },
+      { tag: 'action', text: 'How you responded: asked questions, listened, did not argue' },
+      { tag: 'lesson', text: 'One concrete thing you changed afterwards' },
+      { tag: 'result', text: 'How you knew the change worked' },
+    ],
   },
   {
     id: 'b-ambiguity',
@@ -148,6 +223,12 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'Explains what was unclear and the risk of guessing, how they clarified (questions, a quick prototype, writing assumptions down), and how that changed what got built.',
     followUps: ['Who did you go to for answers?', 'What did you assume, and were you right?'],
+    points: [
+      { tag: 'situation', text: 'What was unclear, and the risk of guessing' },
+      { tag: 'action', text: 'Who you asked, or what you prototyped' },
+      { tag: 'action', text: 'The assumptions you wrote down' },
+      { tag: 'result', text: 'How that changed what got built' },
+    ],
   },
   {
     id: 'b-prioritise',
@@ -164,6 +245,13 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'Shows a clear way of ranking work (impact, deadlines, who is blocked), says what they deliberately left for later, and how they told the people affected.',
     followUps: ['What did you decide not to do?', 'How did you tell people their work would wait?'],
+    points: [
+      { tag: 'situation', text: 'What was on your plate, and the deadlines' },
+      { tag: 'action', text: 'How you ranked it: impact, deadlines, who was blocked' },
+      { tag: 'trade-off', text: 'What you deliberately left for later' },
+      { tag: 'action', text: 'How you told the people affected' },
+      { tag: 'result', text: 'What got delivered' },
+    ],
   },
   {
     id: 'b-proud',
@@ -180,6 +268,13 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'Explains the project and who it was for in two sentences, goes deep on the part they personally built and a hard decision in it, and says why it matters to them.',
     followUps: ['What was the hardest part you built yourself?', 'If you started again, what would you change?'],
+    points: [
+      { tag: 'situation', text: 'What the project was, and who it was for' },
+      { tag: 'own-role', text: 'The part you personally built' },
+      { tag: 'trade-off', text: 'A hard decision in it, and why you chose that way' },
+      { tag: 'result', text: 'What it achieved, ideally a number' },
+      { tag: 'motivation', text: 'Why it matters to you' },
+    ],
   },
   {
     id: 'b-mentor',
@@ -196,6 +291,12 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'Describes the teammate’s situation with empathy, how they helped (pairing, questions, reviews) without just doing the work, and how the teammate became more independent.',
     followUps: ['How did you avoid just doing it for them?', 'How did they get on afterwards?'],
+    points: [
+      { tag: 'situation', text: 'What the teammate was stuck on' },
+      { tag: 'action', text: 'How you helped: pairing, questions, reviews' },
+      { tag: 'trade-off', text: 'How you avoided just doing it for them' },
+      { tag: 'result', text: 'How they became more independent' },
+    ],
   },
 
   // ----------------------------------------------------------------------- HR
@@ -214,6 +315,12 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'Under two minutes: present (what they do now), past (one or two relevant highlights), future (why this role is the next step). Work-focused, not a life story.',
     followUps: ['What made you choose this kind of work?', 'What would you like to do next?'],
+    points: [
+      { tag: 'situation', text: 'Where you are now, in a sentence' },
+      { tag: 'example', text: 'One or two relevant highlights' },
+      { tag: 'motivation', text: 'Why this role is the next step' },
+      { tag: 'framing', text: 'Work-focused and under two minutes' },
+    ],
   },
   {
     id: 'h-why-role',
@@ -230,6 +337,11 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'Names specific things about the role or product that attract them, links them to their own goals, and says what they would bring from day one.',
     followUps: ['What in particular drew you to it?', 'What would you bring to the team?'],
+    points: [
+      { tag: 'example', text: 'Something specific about the role or product' },
+      { tag: 'motivation', text: 'How it links to your own goals' },
+      { tag: 'example', text: 'What you would bring from day one' },
+    ],
   },
   {
     id: 'h-leaving',
@@ -245,6 +357,12 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'Frames it as moving towards something (scope, learning, a kind of product), says something fair about the current job, and avoids complaining about pay or people.',
     followUps: ['What are you looking for in your next role?', 'What have you liked most about your current job?'],
+    points: [
+      { tag: 'motivation', text: 'What you are moving towards: scope, learning, a kind of product' },
+      { tag: 'example', text: 'Something specific this role offers that you want' },
+      { tag: 'framing', text: 'Something fair or good about your current job' },
+      { tag: 'framing', text: 'No complaints about pay or people' },
+    ],
   },
   {
     id: 'h-weakness',
@@ -260,6 +378,12 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'Names a genuine, job-relevant weakness (not "I work too hard"), gives an example of it, and describes the concrete steps they are taking and any progress.',
     followUps: ['What are you doing about it day to day?', 'Can you give an example where it showed up?'],
+    points: [
+      { tag: 'framing', text: 'A real, job-relevant weakness, not a disguised strength' },
+      { tag: 'example', text: 'A time it showed up' },
+      { tag: 'action', text: 'The concrete steps you are taking' },
+      { tag: 'result', text: 'Any progress so far' },
+    ],
   },
   {
     id: 'h-five-years',
@@ -275,6 +399,11 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'Gives a believable direction (deeper expertise, more ownership, leading projects) and connects it to what this role offers.',
     followUps: ['What would you like to be really good at by then?', 'How does this role help you get there?'],
+    points: [
+      { tag: 'motivation', text: 'A believable direction: expertise, ownership, leading' },
+      { tag: 'example', text: 'Something specific you want to be good at' },
+      { tag: 'framing', text: 'How this role helps you get there' },
+    ],
   },
   {
     id: 'h-work-style',
@@ -290,6 +419,11 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'Describes concrete habits (sharing progress early, asking for reviews, writing things down), gives a short example, and shows they adapt to the team.',
     followUps: ['Can you give me an example from a recent team?', 'What kind of team brings out your best work?'],
+    points: [
+      { tag: 'action', text: 'Concrete habits: sharing progress, asking for reviews' },
+      { tag: 'example', text: 'A short example from a recent team' },
+      { tag: 'framing', text: 'How you adapt to the team' },
+    ],
   },
 
   // ------------------------------------------------------------ System design
@@ -572,6 +706,13 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'useEffect runs side effects after React renders: fetching, subscriptions, timers, touching the DOM. The dependency array decides when it re-runs; returning a function cleans up before the next run or on unmount. Mentions that derived values do not need an effect.',
     followUps: ['What happens if the dependency array is left out?', 'What happens if the component unmounts while a fetch is in flight?'],
+    points: [
+      { tag: 'concept', text: 'Runs side effects after React renders' },
+      { tag: 'example', text: 'A real use: fetching data, a subscription, a timer' },
+      { tag: 'concept', text: 'The dependency array decides when it runs again' },
+      { tag: 'edge-case', text: 'Cleanup on unmount or before the next run' },
+      { tag: 'trade-off', text: 'When you do not need an effect, such as derived values' },
+    ],
   },
   {
     id: 'fe-slow-page',
@@ -588,6 +729,13 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'Reproduces it, measures with the Performance tab, Lighthouse or the React Profiler, separates network (bundle size, images, waterfalls) from rendering (unnecessary re-renders, long lists), fixes the biggest cause and measures again.',
     followUps: ['Which tool would you open first, and what would you look for?', 'What if the profiler shows a list re-rendering on every keystroke?'],
+    points: [
+      { tag: 'action', text: 'Reproduce it and measure before fixing' },
+      { tag: 'example', text: 'A named tool: Performance tab, Lighthouse, React Profiler' },
+      { tag: 'concept', text: 'Network causes: bundle size, images, waterfalls' },
+      { tag: 'concept', text: 'Rendering causes: extra re-renders, long lists' },
+      { tag: 'action', text: 'Fix the biggest cause, then measure again' },
+    ],
   },
   {
     id: 'fe-event-loop',
@@ -604,6 +752,12 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'JavaScript runs one call stack. Async work finishes elsewhere and queues callbacks; when the stack is empty the loop runs all microtasks (promises) and then the next task (timers, events). Long synchronous work blocks rendering and input.',
     followUps: ['Which runs first, a resolved promise or a setTimeout of zero?', 'What happens to the page during a long loop?'],
+    points: [
+      { tag: 'concept', text: 'One thread, one call stack' },
+      { tag: 'concept', text: 'Async callbacks wait in queues until the stack is empty' },
+      { tag: 'concept', text: 'Microtasks (promises) run before the next task (timers)' },
+      { tag: 'edge-case', text: 'Long synchronous work blocks rendering and input' },
+    ],
   },
   {
     id: 'fe-css-layout',
@@ -620,6 +774,12 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'Flexbox lays things out along one axis and suits toolbars and rows of buttons; grid controls rows and columns together and suits page layouts and card grids. They are often combined.',
     followUps: ['How would you lay out a dashboard with a sidebar and cards?', 'How would you centre something inside a box?'],
+    points: [
+      { tag: 'concept', text: 'Flexbox lays things out along one axis' },
+      { tag: 'concept', text: 'Grid controls rows and columns together' },
+      { tag: 'example', text: 'A real example of each: a toolbar, a page or card grid' },
+      { tag: 'trade-off', text: 'They are often combined' },
+    ],
   },
   {
     id: 'fe-a11y',
@@ -636,6 +796,13 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'Starts with semantic HTML (real buttons, labels, headings), makes everything work by keyboard with visible focus, checks contrast and alt text, uses ARIA only when HTML cannot express it, and tests with a screen reader and an automated checker.',
     followUps: ['How would you test it yourself?', 'What goes wrong if you build a button out of a div?'],
+    points: [
+      { tag: 'concept', text: 'Semantic HTML: real buttons, labels, headings' },
+      { tag: 'concept', text: 'Everything works by keyboard, with visible focus' },
+      { tag: 'example', text: 'Contrast and alt text' },
+      { tag: 'trade-off', text: 'ARIA only when HTML cannot express it' },
+      { tag: 'action', text: 'Testing with a screen reader and an automated checker' },
+    ],
   },
   {
     id: 'fe-state',
@@ -652,6 +819,12 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'Keeps state as local as possible and lifts it only when siblings share it, treats server data as a cache (React Query or SWR), and reaches for context or a store only for truly app-wide state.',
     followUps: ['When would you reach for context instead of props?', 'Where would data from an API live?'],
+    points: [
+      { tag: 'concept', text: 'Keep state local; lift it only when siblings share it' },
+      { tag: 'concept', text: 'Server data is a cache: React Query or SWR' },
+      { tag: 'trade-off', text: 'Context or a store only for truly app-wide state' },
+      { tag: 'example', text: 'A real example of where something would live' },
+    ],
   },
   {
     id: 'fe-xss',
@@ -668,6 +841,13 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'XSS is untrusted input running as script in the page. Frameworks escape text by default, so avoid innerHTML and dangerouslySetInnerHTML, sanitise when HTML is unavoidable, add a Content Security Policy, and keep tokens out of reach of scripts.',
     followUps: ['When would React not protect you?', 'Where would you store an auth token, and why?'],
+    points: [
+      { tag: 'concept', text: 'Untrusted input running as script in the page' },
+      { tag: 'concept', text: 'Frameworks escape text by default' },
+      { tag: 'edge-case', text: 'innerHTML and dangerouslySetInnerHTML skip that' },
+      { tag: 'action', text: 'Sanitise when HTML is unavoidable' },
+      { tag: 'example', text: 'Extra defences: a Content Security Policy, httpOnly cookies' },
+    ],
   },
   {
     id: 'fe-url',
@@ -684,6 +864,13 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'The browser resolves the domain with DNS, opens a TCP and TLS connection, sends an HTTP request, gets HTML back, parses it into the DOM, fetches CSS and scripts, builds the render tree, lays it out and paints.',
     followUps: ['What does the browser do with a script tag in the head?', 'Where can caching skip some of those steps?'],
+    points: [
+      { tag: 'concept', text: 'DNS turns the name into an address' },
+      { tag: 'concept', text: 'A TCP and TLS connection, then the HTTP request' },
+      { tag: 'concept', text: 'HTML is parsed into the DOM; CSS and scripts are fetched' },
+      { tag: 'concept', text: 'Layout, then paint' },
+      { tag: 'edge-case', text: 'Where caching skips steps' },
+    ],
   },
   {
     id: 'fe-testing',
@@ -700,6 +887,13 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'Renders it with Testing Library, interacts the way a user would (clicks, typing), asserts on what appears on screen, mocks the network at the boundary, and leaves full flows to a few end-to-end tests.',
     followUps: ['How would you test a component that fetches data?', 'What would you not bother testing?'],
+    points: [
+      { tag: 'concept', text: 'Test what the user sees, not internals' },
+      { tag: 'example', text: 'A named tool: Testing Library, Vitest or Jest' },
+      { tag: 'action', text: 'Interact like a user: clicks, typing' },
+      { tag: 'edge-case', text: 'Mock the network at the boundary' },
+      { tag: 'trade-off', text: 'Leave full flows to a few end-to-end tests' },
+    ],
   },
   {
     id: 'fe-loading',
@@ -716,6 +910,13 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'Measures LCP and INP first, splits code by route and lazy-loads heavy parts, considers server or static rendering for the first view, optimises images and fonts, and caches assets with long-lived hashed filenames.',
     followUps: ['Which number would you watch to know it worked?', 'What would you lazy-load first?'],
+    points: [
+      { tag: 'action', text: 'Measure first: LCP and INP' },
+      { tag: 'concept', text: 'Split code by route; lazy-load heavy parts' },
+      { tag: 'trade-off', text: 'Server or static rendering for the first view' },
+      { tag: 'example', text: 'Optimise images and fonts' },
+      { tag: 'concept', text: 'Long-lived caching with hashed filenames' },
+    ],
   },
 
   // ------------------------------------------------------------------ Backend
@@ -734,6 +935,13 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'Models todos as a resource: GET /todos, POST /todos, GET, PATCH and DELETE /todos/:id, returns 201 on create and 404 for a missing item, validates input with a clear 400 error, and adds pagination once lists grow.',
     followUps: ['What would you return if the item does not exist?', 'How would you handle a list with ten thousand items?'],
+    points: [
+      { tag: 'concept', text: 'Todos as a resource with clear URLs' },
+      { tag: 'example', text: 'The methods: GET, POST, PATCH, DELETE' },
+      { tag: 'concept', text: 'Status codes: 201 on create, 404 when missing' },
+      { tag: 'edge-case', text: 'Validate input and return a clear 400' },
+      { tag: 'trade-off', text: 'Pagination once lists grow' },
+    ],
   },
   {
     id: 'be-index',
@@ -750,6 +958,13 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'An index (usually a B-tree) lets the database find rows without scanning the table. Adds one on columns used in frequent filters, joins or sorts, confirmed with EXPLAIN, remembering every index slows writes and takes space.',
     followUps: ['How would you check whether a query uses the index?', 'Why not index every column?'],
+    points: [
+      { tag: 'concept', text: 'Finds rows without scanning the whole table' },
+      { tag: 'example', text: 'Usually a B-tree' },
+      { tag: 'action', text: 'Choose columns from real filters, joins and sorts' },
+      { tag: 'action', text: 'Confirm with EXPLAIN' },
+      { tag: 'trade-off', text: 'Every index slows writes and takes space' },
+    ],
   },
   {
     id: 'be-sql-nosql',
@@ -766,6 +981,13 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'Starts from the data and queries: relational data with joins and transactions suits SQL (often the default), while simple key or document lookups at very high scale or with a flexible shape can suit NoSQL. Names a concrete example of each.',
     followUps: ['Which would you pick for an online shop’s orders, and why?', 'What do you give up with a document database?'],
+    points: [
+      { tag: 'concept', text: 'Start from the data shape and the queries' },
+      { tag: 'concept', text: 'Relations, joins and transactions suit SQL' },
+      { tag: 'concept', text: 'Simple lookups at huge scale can suit NoSQL' },
+      { tag: 'example', text: 'A concrete example of each' },
+      { tag: 'trade-off', text: 'What you give up with each' },
+    ],
   },
   {
     id: 'be-cache',
@@ -782,6 +1004,13 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'Measures why it is slow first, caches the expensive result in something like Redis keyed on the inputs, sets a TTL or invalidates on writes, watches the hit rate and latency, and considers HTTP caching if the data is public.',
     followUps: ['What happens when the underlying data changes?', 'What if many requests miss the cache at the same moment?'],
+    points: [
+      { tag: 'action', text: 'Measure why it is slow first' },
+      { tag: 'concept', text: 'Where the cache sits and what it is keyed on' },
+      { tag: 'edge-case', text: 'Expiry or invalidation when the data changes' },
+      { tag: 'action', text: 'Watch the hit rate and latency' },
+      { tag: 'example', text: 'HTTP or CDN caching if the data is public' },
+    ],
   },
   {
     id: 'be-auth',
@@ -798,6 +1027,13 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'Hashes passwords with bcrypt or Argon2, issues a session cookie (httpOnly, secure) or a short-lived token with refresh, serves everything over HTTPS, and considers an established provider instead of rolling its own.',
     followUps: ['Where would you keep the token on the client, and why?', 'How would you log a user out everywhere?'],
+    points: [
+      { tag: 'concept', text: 'Hash passwords with bcrypt or Argon2' },
+      { tag: 'trade-off', text: 'A session cookie or a short-lived token' },
+      { tag: 'edge-case', text: 'httpOnly and secure cookies, expiry and refresh' },
+      { tag: 'concept', text: 'Everything over HTTPS' },
+      { tag: 'trade-off', text: 'An established provider instead of your own' },
+    ],
   },
   {
     id: 'be-rate-limit',
@@ -814,6 +1050,13 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'Picks a token bucket or sliding window per user or key, keeps counters somewhere shared like Redis or the API gateway so all instances agree, returns 429 with Retry-After, and sets limits from real traffic.',
     followUps: ['What happens when you run five instances of the service?', 'What should the client do when it gets limited?'],
+    points: [
+      { tag: 'concept', text: 'A named algorithm: token bucket or sliding window' },
+      { tag: 'concept', text: 'What you limit by: user, key or IP' },
+      { tag: 'edge-case', text: 'Shared counters so all instances agree' },
+      { tag: 'example', text: 'Return 429 with Retry-After' },
+      { tag: 'action', text: 'Set limits from real traffic' },
+    ],
   },
   {
     id: 'be-transactions',
@@ -830,6 +1073,12 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'A transaction groups changes so they all happen or none do. The classic example is a transfer: debit and credit together. Mentions ACID and that isolation levels decide what concurrent transactions can see.',
     followUps: ['What could go wrong without one in a money transfer?', 'What happens if two transactions update the same row?'],
+    points: [
+      { tag: 'concept', text: 'A group of changes that all happen or none do' },
+      { tag: 'example', text: 'A money transfer: debit and credit together' },
+      { tag: 'concept', text: 'ACID' },
+      { tag: 'edge-case', text: 'Isolation decides what concurrent transactions see' },
+    ],
   },
   {
     id: 'be-queue',
@@ -846,6 +1095,13 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'Uses a queue to move slow or spiky work (emails, image processing) out of the request, smooth bursts and decouple services. Handles retries with a dead-letter queue and makes consumers idempotent because delivery is usually at least once.',
     followUps: ['What happens if the same message is delivered twice?', 'How would you notice messages piling up?'],
+    points: [
+      { tag: 'concept', text: 'Move slow or spiky work out of the request' },
+      { tag: 'example', text: 'A real use: emails, image processing' },
+      { tag: 'concept', text: 'Decoupling services and smoothing bursts' },
+      { tag: 'edge-case', text: 'Retries and a dead-letter queue' },
+      { tag: 'edge-case', text: 'Idempotent consumers, since delivery is at least once' },
+    ],
   },
   {
     id: 'be-idempotency',
@@ -862,6 +1118,13 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'The client sends an idempotency key; the server records it with the outcome of the first attempt and returns that same outcome for retries, using a unique constraint or lock so two simultaneous retries cannot both charge.',
     followUps: ['What if both retries arrive at exactly the same time?', 'How long would you keep the keys?'],
+    points: [
+      { tag: 'concept', text: 'The client sends an idempotency key' },
+      { tag: 'concept', text: 'The server stores the first outcome with the key' },
+      { tag: 'action', text: 'Retries get the same outcome back' },
+      { tag: 'edge-case', text: 'Two retries at once: a unique constraint or lock' },
+      { tag: 'trade-off', text: 'How long to keep the keys' },
+    ],
   },
   {
     id: 'be-incident',
@@ -878,6 +1141,13 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'Checks the scope on dashboards, looks at what changed recently, rolls back or flags off to stop the bleeding, then digs into logs and traces for the root cause, communicates status, and writes a blameless post-mortem.',
     followUps: ['What would you check first?', 'When would you roll back rather than fix forward?'],
+    points: [
+      { tag: 'action', text: 'Check the scope on dashboards' },
+      { tag: 'action', text: 'Look at what changed recently' },
+      { tag: 'trade-off', text: 'Roll back or flag off before digging in' },
+      { tag: 'action', text: 'Logs and traces for the root cause' },
+      { tag: 'lesson', text: 'Keep people updated, then a blameless post-mortem' },
+    ],
   },
 
   // ----------------------------------------------------------------------- ML
@@ -896,6 +1166,12 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'Overfitting is learning the training data, noise included, so it fails on new data; it shows as a large train versus validation gap. Remedies: more or augmented data, regularisation, dropout, early stopping, or a simpler model.',
     followUps: ['How would you spot it on a training curve?', 'What if you cannot get more data?'],
+    points: [
+      { tag: 'concept', text: 'Learning the training data, noise included' },
+      { tag: 'concept', text: 'Shows as a gap between training and validation' },
+      { tag: 'example', text: 'Remedies: more or augmented data, regularisation, dropout' },
+      { tag: 'trade-off', text: 'Early stopping or a simpler model' },
+    ],
   },
   {
     id: 'ml-metrics',
@@ -912,6 +1188,12 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'With imbalanced classes accuracy misleads (99% by always saying "not fraud"). Uses precision, recall, F1 or PR-AUC, and picks the threshold from which error costs more: a missed fraud or a false alarm.',
     followUps: ['For a cancer screening model, which error is worse?', 'How would you choose the threshold?'],
+    points: [
+      { tag: 'concept', text: 'Imbalanced classes make accuracy misleading' },
+      { tag: 'example', text: 'An example: 99% by always saying "not fraud"' },
+      { tag: 'concept', text: 'Precision, recall, F1 or PR-AUC instead' },
+      { tag: 'trade-off', text: 'Which error costs more decides the threshold' },
+    ],
   },
   {
     id: 'ml-leakage',
@@ -928,6 +1210,13 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'Leakage is training on information unavailable at prediction time, which gives great offline scores that collapse in production. Avoids it by splitting first (by time or group where needed), fitting preprocessing on training data only, and checking features for target proxies.',
     followUps: ['How would a suspiciously good score make you check for it?', 'How would you split data that has dates?'],
+    points: [
+      { tag: 'concept', text: 'Training on information you will not have at prediction time' },
+      { tag: 'edge-case', text: 'Great offline scores that collapse in production' },
+      { tag: 'action', text: 'Split first, by time or group where needed' },
+      { tag: 'action', text: 'Fit preprocessing on training data only' },
+      { tag: 'example', text: 'Check features for target proxies' },
+    ],
   },
   {
     id: 'ml-bias-variance',
@@ -944,6 +1233,12 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'Bias is error from a model too simple to capture the pattern (underfitting); variance is error from sensitivity to the particular training set (overfitting). More complexity lowers bias and raises variance; validation finds the balance.',
     followUps: ['Which one does adding more data help with?', 'How would you tell which one your model suffers from?'],
+    points: [
+      { tag: 'concept', text: 'Bias: too simple, underfits' },
+      { tag: 'concept', text: 'Variance: too sensitive to the training set, overfits' },
+      { tag: 'trade-off', text: 'More complexity lowers bias and raises variance' },
+      { tag: 'action', text: 'Validation finds the balance' },
+    ],
   },
   {
     id: 'ml-imbalance',
@@ -960,6 +1255,13 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'Switches to precision, recall or PR-AUC, tries class weights or resampling (on the training split only), tunes the decision threshold, and considers collecting more minority examples.',
     followUps: ['Where in the pipeline would you resample, and why there?', 'What would you report to the team?'],
+    points: [
+      { tag: 'concept', text: 'Use precision, recall or PR-AUC' },
+      { tag: 'action', text: 'Class weights or resampling' },
+      { tag: 'edge-case', text: 'Resample the training split only' },
+      { tag: 'action', text: 'Tune the decision threshold' },
+      { tag: 'trade-off', text: 'Collecting more minority examples' },
+    ],
   },
   {
     id: 'ml-missing',
@@ -976,6 +1278,12 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'First asks why values are missing, since missingness can itself be informative. Options: drop rows or columns, impute with median or a model, or add a missing indicator, fitting any imputer on training data only.',
     followUps: ['When would you drop the column entirely?', 'What if missing values mean something?'],
+    points: [
+      { tag: 'action', text: 'Ask why values are missing first' },
+      { tag: 'edge-case', text: 'Missingness can itself carry information' },
+      { tag: 'example', text: 'Options: drop, impute with the median, add an indicator' },
+      { tag: 'edge-case', text: 'Fit the imputer on training data only' },
+    ],
   },
   {
     id: 'ml-deploy',
@@ -992,6 +1300,13 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'Chooses batch or online serving by latency needs, rolls out behind a shadow test or canary, monitors input distributions, prediction drift and real outcomes, and has a retraining and rollback plan.',
     followUps: ['How would you know the model had got worse?', 'How would you roll it out safely?'],
+    points: [
+      { tag: 'trade-off', text: 'Batch or online serving, by latency needs' },
+      { tag: 'action', text: 'Roll out behind a shadow test or canary' },
+      { tag: 'concept', text: 'Monitor input drift and prediction drift' },
+      { tag: 'action', text: 'Track real outcomes once they arrive' },
+      { tag: 'edge-case', text: 'A retraining and rollback plan' },
+    ],
   },
   {
     id: 'ml-gradient',
@@ -1008,6 +1323,12 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'It repeatedly moves the parameters a small step against the gradient of the loss. The learning rate is the step size: too large overshoots or diverges, too small is slow; schedules and optimisers like Adam help.',
     followUps: ['What would the loss curve look like with a learning rate that is too high?', 'What is the difference with stochastic gradient descent?'],
+    points: [
+      { tag: 'concept', text: 'Repeated small steps against the gradient of the loss' },
+      { tag: 'concept', text: 'The learning rate is the step size' },
+      { tag: 'edge-case', text: 'Too large overshoots or diverges; too small is slow' },
+      { tag: 'example', text: 'Schedules or optimisers like Adam' },
+    ],
   },
   {
     id: 'ml-baseline',
@@ -1024,6 +1345,13 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'Clarifies the decision the model supports and the metric that reflects it, explores the data, builds a simple baseline (a heuristic or logistic regression), and only then iterates on features and models against that baseline.',
     followUps: ['Why start with something simple?', 'How would you pick the metric?'],
+    points: [
+      { tag: 'framing', text: 'The decision the model supports' },
+      { tag: 'concept', text: 'A metric that reflects that goal' },
+      { tag: 'action', text: 'Look at the data first' },
+      { tag: 'example', text: 'A simple baseline: a heuristic or logistic regression' },
+      { tag: 'trade-off', text: 'Iterate only against that baseline' },
+    ],
   },
   {
     id: 'ml-attention',
@@ -1040,6 +1368,13 @@ export const BANK: BankQuestion[] = [
     sampleAnswer:
       'Each token makes a query, key and value; attention scores are query-key dot products, softmaxed, used to weight the values. It lets every token draw on any other in parallel, which handles long-range context better than RNNs; multi-head attention learns several such patterns.',
     followUps: ['Why is attention expensive for long inputs?', 'What does multi-head attention add?'],
+    points: [
+      { tag: 'concept', text: 'Each token makes a query, a key and a value' },
+      { tag: 'concept', text: 'Query-key scores, softmaxed, weight the values' },
+      { tag: 'trade-off', text: 'Every token sees every other in parallel, unlike RNNs' },
+      { tag: 'concept', text: 'Multi-head: several patterns at once' },
+      { tag: 'edge-case', text: 'Cost grows with the square of the input length' },
+    ],
   },
 ]
 
