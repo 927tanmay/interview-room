@@ -73,6 +73,11 @@ export function startInterview(settings: InterviewSettings) {
   engine.start()
 }
 
+// The interview as it stands, for the report when it ends.
+export function currentSnapshot(): EngineSnapshot | null {
+  return engine?.snapshot() ?? null
+}
+
 export function stopInterview() {
   stopWatchingVoice?.()
   stopWatchingVoice = null

@@ -2,6 +2,9 @@ import { lazy, Suspense, useReducer } from 'react'
 import { appReducer, initialState, isVoiceMounted } from './app/state'
 import { useDeviceCheck } from './app/useDeviceCheck'
 import { PrivacyNote } from './components/PrivacyNote'
+import { currentSnapshot, stopInterview } from './interview/session'
+import { createReport } from './report/report'
+import { saveReport } from './report/store'
 import { VoiceHost } from './voice/VoiceHost'
 import { loadReducer } from './voice/loading'
 import { voiceControls } from './voice/voiceStore'
@@ -10,11 +13,13 @@ import { Interview } from './screens/Interview'
 import { Report } from './screens/Report'
 import { Setup } from './screens/Setup'
 
-// Dev-only panels (`?dev=gemma`, `?dev=setup`, `?dev=room`, `?dev=avatar`); dropped from production.
+// Dev-only panels (`?dev=gemma`, `?dev=setup`, `?dev=room`, `?dev=avatar`,
+// `?dev=report`); dropped from production.
 const GemmaTest = import.meta.env.DEV ? lazy(() => import('./dev/GemmaTest')) : null
 const SetupPreview = import.meta.env.DEV ? lazy(() => import('./dev/SetupPreview')) : null
 const RoomPreview = import.meta.env.DEV ? lazy(() => import('./dev/RoomPreview')) : null
 const AvatarPreview = import.meta.env.DEV ? lazy(() => import('./dev/AvatarPreview')) : null
+const ReportPreview = import.meta.env.DEV ? lazy(() => import('./dev/ReportPreview')) : null
 const devPanel = import.meta.env.DEV ? new URLSearchParams(location.search).get('dev') : null
 
 function App() {
@@ -30,7 +35,8 @@ function App() {
       </Suspense>
     )
   }
-  const DevPanel = devPanel === 'gemma' ? GemmaTest : devPanel === 'setup' ? SetupPreview : null
+  const DevPanel =
+    devPanel === 'gemma' ? GemmaTest : devPanel === 'setup' ? SetupPreview : devPanel === 'report' ? ReportPreview : null
   if (DevPanel) {
     return (
       <div className="app">
@@ -70,11 +76,22 @@ function App() {
           <Interview
             display={state.display}
             settings={state.settings}
-            onEnd={() => dispatch({ type: 'finishInterview' })}
+            onEnd={() => {
+              // The report is made from the engine's records as they stand
+              // and saved on the device; the screen reads it from memory at
+              // once, so it does not wait for the save.
+              const snapshot = currentSnapshot()
+              if (!snapshot || !state.mode) return
+              const report = createReport(snapshot, state.settings, state.mode, state.display!)
+              void saveReport(report)
+              stopInterview()
+              dispatch({ type: 'finishInterview', reportId: report.id })
+            }}
           />
         )}
         {state.screen === 'report' && (
           <Report
+            reportId={state.reportId}
             onPracticeAgain={() => dispatch({ type: 'practiceAgain' })}
             onHome={() => dispatch({ type: 'goHome' })}
           />

@@ -18,6 +18,8 @@ export type AppState = {
   // cannot change after that (UX.md: downloads).
   display: Display | null
   settings: InterviewSettings
+  // The report of the interview that just ended (saved on the device).
+  reportId: string | null
 }
 
 export type AppAction =
@@ -25,11 +27,11 @@ export type AppAction =
   | { type: 'chooseDisplay'; display: Display; interviewer: InterviewerId }
   | { type: 'updateSettings'; patch: Partial<InterviewSettings> }
   | { type: 'startInterview' }
-  | { type: 'finishInterview' }
+  | { type: 'finishInterview'; reportId: string }
   | { type: 'practiceAgain' }
   | { type: 'goHome' }
 
-export const initialState: AppState = { screen: 'home', mode: null, display: null, settings: DEFAULT_SETTINGS }
+export const initialState: AppState = { screen: 'home', mode: null, display: null, settings: DEFAULT_SETTINGS, reportId: null }
 
 export function appReducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {
@@ -48,7 +50,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     case 'startInterview':
       return state.mode && state.display ? { ...state, screen: 'interview' } : state
     case 'finishInterview':
-      return { ...state, screen: 'report' }
+      return { ...state, screen: 'report', reportId: action.reportId }
     case 'practiceAgain':
       return { ...state, display: null, screen: 'setup' }
     case 'goHome':

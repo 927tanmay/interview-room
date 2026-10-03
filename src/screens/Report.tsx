@@ -1,24 +1,39 @@
 import { lazy, Suspense } from 'react'
 import { ScreenFrame } from '../components/ScreenFrame'
-import { useInterview } from '../interview/session'
+import { useReport } from '../report/store'
 
 const SessionLog = import.meta.env.DEV ? lazy(() => import('../dev/SessionLog')) : null
 
-// Placeholder until phase 5, which fills it in: specific to what they said,
-// quoting their answers, measured numbers only (UX.md: report). Dev builds
-// show the raw session log for checking a run (TASKS.md 4.3).
-export function Report({ onPracticeAgain, onHome }: { onPracticeAgain: () => void; onHome: () => void }) {
-  const state = useInterview()
+// Placeholder until the self-review and report steps fill it in: specific to
+// what they said, quoting their answers, measured numbers only (UX.md:
+// report). Reads the saved report, so it survives a reload. Dev builds show
+// the raw session log and the measured numbers for checking a run.
+export function Report({
+  reportId,
+  onPracticeAgain,
+  onHome,
+}: {
+  reportId: string | null
+  onPracticeAgain: () => void
+  onHome: () => void
+}) {
+  const { report, loading } = useReport(reportId)
   return (
     <ScreenFrame title="Your interview">
       <section aria-labelledby="answers-title" className="panel">
         <h2 id="answers-title">Your answers</h2>
-        <p className="placeholder">Each answer, in your words, with what was measured (phase 5).</p>
+        <p className="placeholder">
+          {loading
+            ? 'Loading your report…'
+            : report
+              ? `${report.records.length} questions. Each answer, in your words, with what was measured.`
+              : 'This report could not be found on this device.'}
+        </p>
       </section>
 
-      {SessionLog && state && (
+      {SessionLog && report && (
         <Suspense fallback={null}>
-          <SessionLog snapshot={state} />
+          <SessionLog report={report} />
         </Suspense>
       )}
 
