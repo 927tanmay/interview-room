@@ -1,5 +1,6 @@
 import { useReducer } from 'react'
 import { appReducer, initialState, isEngineMounted } from './app/state'
+import { useDeviceCheck } from './app/useDeviceCheck'
 import { PrivacyNote } from './components/PrivacyNote'
 import { EngineHost } from './engine/EngineHost'
 import { Home } from './screens/Home'
@@ -9,12 +10,13 @@ import { Setup } from './screens/Setup'
 
 function App() {
   const [state, dispatch] = useReducer(appReducer, initialState)
+  const device = useDeviceCheck()
 
   return (
     <div className={`app app--${state.screen}`}>
       <main>
         {state.screen === 'home' && (
-          <Home onChooseMode={(mode) => dispatch({ type: 'chooseMode', mode })} />
+          <Home device={device} onChooseMode={(mode) => dispatch({ type: 'chooseMode', mode })} />
         )}
         {state.screen === 'setup' && state.mode && (
           <Setup

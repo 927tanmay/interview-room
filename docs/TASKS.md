@@ -57,7 +57,7 @@ code:
 
 ## Phase 1: Home page and models (Sat)
 
-- [ ] **1.1 Device check.** WebGPU present, adapter, `shader-f16`
+- [x] **1.1 Device check.** WebGPU present, adapter, `shader-f16`
   (`navigator.gpu.requestAdapter()`). Heavy needs `shader-f16`; Light does not.
   Check: on this M4 both modes are allowed; with `shader-f16` faked off, Heavy
   is disabled with a reason.

@@ -278,8 +278,33 @@ input[type='radio'] {
   padding: 16px 18px;
 }
 
-.mode-option:hover {
+.mode-option:hover:not(:disabled) {
   border-color: var(--accent);
+}
+
+/* Unavailable, but the reason inside must stay readable: no fading. */
+.mode-option:disabled {
+  opacity: 1;
+  border-style: dashed;
+  background: transparent;
+}
+
+.mode-option:disabled .mode-name {
+  color: var(--muted);
+}
+
+/* A plain notice: neutral, no warning colour (one accent only). */
+.notice {
+  border-left: 3px solid var(--text);
+  padding: 2px 0 2px 14px;
+}
+
+.notice-title {
+  font-weight: 600;
+}
+
+.notice p:last-child {
+  margin-bottom: 0;
 }
 
 .mode-name,
