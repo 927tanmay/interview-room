@@ -9,7 +9,7 @@ voice and the avatar all run on your own device. Nothing you say is uploaded;
 the only network use is downloading the models the first time, and they are
 kept on your device after that.
 
-**Demo:** _coming soon (Render)_
+**Demo:** https://interview-room-iooj.onrender.com (Chrome or Edge on a laptop or desktop)
 
 Built for the DEV Hacktoberfest Weekend Challenge: Build for a Friend.
 
