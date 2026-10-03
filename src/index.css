@@ -142,6 +142,16 @@ footer {
   animation: screen-in var(--ease);
 }
 
+@media (max-width: 520px) {
+  .screen {
+    padding: 20px 16px;
+  }
+
+  .screen .panel {
+    padding: 14px;
+  }
+}
+
 @keyframes screen-in {
   from {
     opacity: 0;
@@ -291,6 +301,63 @@ input[type='radio'] {
 
 .mode-option:disabled .mode-name {
   color: var(--muted);
+}
+
+/* Home: download list */
+
+.downloads {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+  margin-top: 8px;
+}
+
+.downloads caption {
+  text-align: left;
+  font-weight: 600;
+  padding-bottom: 6px;
+}
+
+.downloads th,
+.downloads td {
+  text-align: left;
+  padding: 7px 0;
+  border-top: 1px solid var(--border);
+  vertical-align: top;
+}
+
+.downloads td + td,
+.downloads th + th {
+  padding-left: 12px;
+}
+
+.downloads thead th {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 0.85rem;
+  border-top: 0;
+}
+
+.download-name {
+  display: block;
+}
+
+.download-job {
+  display: block;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.downloads .size {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.downloads tfoot th,
+.downloads tfoot td {
+  font-weight: 600;
+  color: var(--text);
 }
 
 /* A plain notice: neutral, no warning colour (one accent only). */

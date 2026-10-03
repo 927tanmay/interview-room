@@ -61,7 +61,7 @@ code:
   (`navigator.gpu.requestAdapter()`). Heavy needs `shader-f16`; Light does not.
   Check: on this M4 both modes are allowed; with `shader-f16` faked off, Heavy
   is disabled with a reason.
-- [ ] **1.2 Home page.** Pick Light (Gemma 3 1B, 859 MB) or Heavy (Gemma 4
+- [x] **1.2 Home page.** Pick Light (Gemma 3 1B, 859 MB) or Heavy (Gemma 4
   E2B, 3.11 GB), with sizes and what each mode gives. Unsupported Heavy falls
   back to Light and says why.
 - [ ] **1.3 Gemma worker.** A Web Worker that loads only the chosen mode's

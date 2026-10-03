@@ -1,5 +1,7 @@
 import type { DeviceCheck } from '../app/device'
+import { downloadsFor, formatBytes, totalBytes } from '../app/downloads'
 import type { Mode } from '../app/state'
+import { DownloadList } from '../components/DownloadList'
 import { ScreenFrame } from '../components/ScreenFrame'
 
 const UNSUPPORTED: Record<Extract<DeviceCheck, { status: 'unsupported' }>['reason'], { title: string; body: string }> = {
@@ -21,11 +23,12 @@ const UNSUPPORTED: Record<Extract<DeviceCheck, { status: 'unsupported' }>['reaso
   },
 }
 
-// Steps 1.2 and 1.6 add the full download list with sizes and the fallback
-// to Light when Heavy fails to load.
+// Step 1.5 adds the fallback to Light when Heavy fails to load.
 export function Home({ device, onChooseMode }: { device: DeviceCheck; onChooseMode: (mode: Mode) => void }) {
   const ready = device.status === 'ready'
   const heavyAllowed = ready && device.heavy
+  const lightTotal = formatBytes(totalBytes(downloadsFor('light')))
+  const heavyTotal = formatBytes(totalBytes(downloadsFor('heavy')))
 
   return (
     <ScreenFrame title="Interview Room">
@@ -66,7 +69,10 @@ export function Home({ device, onChooseMode }: { device: DeviceCheck; onChooseMo
             onClick={() => onChooseMode('light')}
           >
             <span className="mode-name">Light</span>
-            <span className="mode-detail">Gemma 3 1B, 859 MB. For slower laptops or connections.</span>
+            <span className="mode-detail">
+              Gemma 3 1B. For slower laptops or connections. About {lightTotal} the first
+              time.
+            </span>
           </button>
           <button
             type="button"
@@ -77,7 +83,8 @@ export function Home({ device, onChooseMode }: { device: DeviceCheck; onChooseMo
           >
             <span className="mode-name">Heavy</span>
             <span className="mode-detail">
-              Gemma 4 E2B, 3.11 GB. Better follow-ups and a deeper review.
+              Gemma 4 E2B. Better follow-ups and a deeper review. About {heavyTotal} the first
+              time.
             </span>
             {ready && !heavyAllowed && (
               <span id="heavy-unavailable" className="mode-detail">
@@ -86,7 +93,7 @@ export function Home({ device, onChooseMode }: { device: DeviceCheck; onChooseMo
             )}
           </button>
         </div>
-        <p className="placeholder">Full download list with sizes goes here (step 1.2).</p>
+        <DownloadList />
       </section>
     </ScreenFrame>
   )

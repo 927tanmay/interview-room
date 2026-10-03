@@ -69,11 +69,16 @@ Deadline: Mon 5 Oct 2026, 12:29 IST (06:59 UTC).
 
 | Job | Model | Size | Status |
 |---|---|---|---|
-| Speech detection | Silero VAD | ~2 MB | via the package |
-| Hearing | Whisper base (en) | ~150 MB | via the package |
-| Voice | Kokoro-82M (fp32) | ~310 MB | via the package |
-| Gemma, **Light** mode | Gemma 3 1B (q4) | 859 MB | tested: good follow-ups with a guard, cannot judge |
-| Gemma, **Heavy** mode | Gemma 4 E2B (q4f16, text parts) | 3.11 GB | tested: better follow-ups at the same speed on an M4, reviews code correctly |
+| Speech detection | Silero VAD (legacy) | 1.8 MB | via the package |
+| Hearing | Whisper base (fp32 on WebGPU) | 295 MB | via the package |
+| Voice | Kokoro-82M (fp32) | 326 MB | via the package |
+| Gemma, **Light** mode | Gemma 3 1B (q4) | 880 MB | tested: good follow-ups with a guard, cannot judge |
+| Gemma, **Heavy** mode | Gemma 4 E2B (q4f16, text parts) | 3.13 GB | tested: better follow-ups at the same speed on an M4, reviews code correctly |
+| Runtime | ONNX Runtime WebAssembly | ~67 MB | package (1.29.0) + Gemma worker |
+| Avatar (video only) | three.js code + one avatar | ~7 MB | via the package |
+
+Sizes include tokenizer and config files, measured 3 Oct 2026 (source of truth:
+`src/app/downloads.ts`). First visit: about 1.6 GB in Light, 3.8 GB in Heavy.
 
 Two modes, chosen by the candidate on the home page. **Only the chosen mode's
 Gemma is downloaded**; the other is never fetched unless the candidate switches
