@@ -12,6 +12,25 @@ dist
 dist-ssr
 *.local
 
+# Secrets and local settings
+.env
+.env.*
+!.env.example
+.claude/settings.local.json
+.entire/settings.local.json
+
+# Model files: downloaded by the browser at runtime, never committed
+*.onnx
+*.onnx_data
+*.onnx_data_*
+*.gguf
+*.safetensors
+*.glb
+models/
+
+# Scratch output from size measurements
+.measure/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
