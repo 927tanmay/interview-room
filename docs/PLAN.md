@@ -17,8 +17,9 @@ Deadline: Mon 5 Oct 2026, 12:29 IST (06:59 UTC).
 
 ### Interview setup
 - Track: **Frontend**, **Backend**, **ML**.
-- Round: **Behavioural**, **Technical** (for the track), **HR**, or **Full loop**
-  (intro, 2 behavioural, 2 technical, 1 HR).
+- Round: **Behavioural**, **Technical** (for the track), **System design**
+  (junior and up; a spoken walk-through, longer answers), **HR**, or **Full
+  loop** (intro, 2 behavioural, 2 technical, 1 HR).
 - Level: intern / junior / mid / senior.
 - Interviewer: Ananya or Aarav (the two avatars), mood friendly / neutral / tough.
 - **Video interview** (the 3D avatar, default) or **Phone screen** (voice only,
@@ -192,7 +193,7 @@ guard rejects it, a written line for that angle is spoken instead. (Test run:
 ```ts
 type BankQuestion = {
   id: string;
-  round: 'behavioural' | 'technical' | 'hr';
+  round: 'behavioural' | 'technical' | 'system-design' | 'hr';
   tracks: ('any' | 'frontend' | 'backend' | 'ml')[];
   levels: Level[];
   question: string;
@@ -203,7 +204,11 @@ type BankQuestion = {
 };
 ```
 
-Target: ~10 behavioural and ~6 HR for any track, ~10 technical per track.
+Target: ~10 behavioural and ~6 HR for any track, ~10 technical per track,
+and system design: 5 for any track plus 1-2 per track (URL shortener, photo
+sharing, chat, news feed, notifications; autocomplete and a shared component
+library for frontend; seat booking for backend; recommendations and fraud
+detection for ML).
 Gemma only sees the current question's intent and the angle for this turn.
 
 ---

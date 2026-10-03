@@ -118,10 +118,14 @@ code:
 
 ## Phase 3: Interview engine (Sat)
 
-- [ ] **3.1 Question bank.** The `BankQuestion` type and data: ~10
+- [x] **3.1 Question bank.** The `BankQuestion` type and data: ~10
   behavioural and ~6 HR for any track, ~10 technical each for frontend,
   backend and ML, with intent, key points, sample answer and written
-  follow-ups.
+  follow-ups. `src/interview/bank.ts`: 56 questions (10 behavioural, 6 HR,
+  10 technical per track, 10 system design), `pickQuestions()` for a round or
+  a full loop. Checked: unique ids, at least 3 questions per round for every
+  track and level (system design: junior and up, none for interns), full
+  loop is 2 behavioural, 2 technical, 1 HR with no repeats.
 - [ ] **3.2 Engine state machine.** Plain code, no UI: greeting, one small-talk
   turn, ask, collect the answer across pauses (done on "I'm done" or after a
   long pause, never a short silence), follow-up, reaction, next question, "any questions for me?",
@@ -143,7 +147,8 @@ code:
 
 ## Phase 4: Setup and interview room (Sat afternoon)
 
-- [ ] **4.1 Setup page.** Track, round (or full loop), level, interviewer,
+- [ ] **4.1 Setup page.** Track, round (behavioural, technical, system design
+  for junior and up, HR, or full loop), level, interviewer,
   mood, question source (built-in bank for now), number of questions, target
   answer length.
 - [ ] **4.2 Interview room.** Avatar, question card, live captions, answer
