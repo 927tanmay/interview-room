@@ -13,8 +13,18 @@ function statusText(item: LoadItem, bytes: number): string {
     case 'ready':
       return 'Ready'
     case 'failed':
-      return `Could not load: ${item.message ?? 'unknown error'}`
+      return "Didn't finish loading"
   }
+}
+
+// What failed, in plain words. The package's own message goes to the console,
+// not on screen.
+const FAILED: Record<LoadItemId, string> = {
+  whisper: "Speech recognition (Whisper) didn't finish loading, so the interviewer can't hear you yet.",
+  kokoro:
+    "The interviewer's voice (Kokoro) didn't finish loading. The interview won't start on a backup voice, so try again to get the real one.",
+  gemma: "The interviewer (Gemma) didn't finish loading.",
+  avatar: "The 3D avatar didn't finish loading.",
 }
 
 // One line for screen readers that changes only when a model changes phase,
@@ -30,7 +40,7 @@ function summary(state: LoadState): string {
 // Loading while the candidate fills in the setup: one compact area with the
 // overall progress and what is loading now; each model's status on request.
 // Once everything is ready it shrinks to one line.
-export function LoadProgress({ mode, state }: { mode: Mode; state: LoadState }) {
+export function LoadProgress({ mode, state, onRetry }: { mode: Mode; state: LoadState; onRetry: () => void }) {
   const ids = Object.keys(state) as LoadItemId[]
   const items = ids.map((id) => ({ id, item: state[id]!, d: downloadFor(id, mode) }))
   const ready = items.filter((x) => x.item.phase === 'ready').length
@@ -64,11 +74,20 @@ export function LoadProgress({ mode, state }: { mode: Mode; state: LoadState }) 
         </span>
       </div>
       <progress max={100} value={pct} aria-label={`Models: ${pct}% loaded`} />
-      {failed.map(({ id, item, d }) => (
-        <p key={id} className="load-failed">
-          {d.name}: {statusText(item, d.bytes)}
-        </p>
-      ))}
+      {failed.length > 0 && (
+        <div className="load-failed" role="alert">
+          {failed.map(({ id }) => (
+            <p key={id}>{FAILED[id]}</p>
+          ))}
+          <p className="muted">
+            This is usually a dropped connection. Files that finished are kept on this device, so trying again picks
+            up where it stopped.
+          </p>
+          <button type="button" className="primary" onClick={onRetry}>
+            Try again
+          </button>
+        </div>
+      )}
       {!failed.length && now && (
         <p className="muted load-now">
           {now.d.name} · {statusText(now.item, now.d.bytes)}

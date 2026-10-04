@@ -6,7 +6,7 @@ import { ChoiceChips } from '../components/ChoiceChips'
 import { LoadProgress } from '../components/LoadProgress'
 import { MicCheck } from '../components/MicCheck'
 import { ScreenFrame } from '../components/ScreenFrame'
-import { allReady, overallProgress, type LoadState } from '../voice/loading'
+import { allReady, failedIds, overallProgress, type LoadState } from '../voice/loading'
 import type { BankQuestion, Level, Track } from '../interview/bank'
 import type { Mood } from '../interview/lines'
 import {
@@ -50,6 +50,7 @@ export function Setup({
   onSettingsChange,
   onStart,
   onBack,
+  onRetry = () => {},
 }: {
   mode: Mode
   display: Display | null
@@ -61,6 +62,8 @@ export function Setup({
   onSettingsChange: (patch: Partial<InterviewSettings>) => void
   onStart: () => void
   onBack: () => void
+  // Try again after a model failed to load: reloads only what failed.
+  onRetry?: () => void
 }) {
   // Video and Ananya are preselected; nothing loads until Continue.
   const [pendingDisplay, setPendingDisplay] = useState<Display>('video')
@@ -80,6 +83,7 @@ export function Setup({
   const countMax = settings.round === 'full' ? FULL_LOOP_COUNT : Math.min(5, availableCount(settings.round, settings.track, settings.level))
 
   const pct = overallProgress(mode, load)
+  const failed = failedIds(load).length > 0
   const faces = { ananya, aarav }
 
   return (
@@ -110,7 +114,7 @@ export function Setup({
             <h2 id="download-title" className="sr-only">
               Models ({mode === 'heavy' ? 'Heavy' : 'Light'} mode)
             </h2>
-            <LoadProgress mode={mode} state={load} />
+            <LoadProgress mode={mode} state={load} onRetry={onRetry} />
           </section>
         </div>
       ) : (
@@ -277,7 +281,11 @@ export function Setup({
         <button type="button" onClick={onBack}>
           Back
         </button>
-        {chosen ? (
+        {chosen && failed ? (
+          <button type="button" className="primary big" onClick={onRetry}>
+            Try again
+          </button>
+        ) : chosen ? (
           <button
             type="button"
             className={ready ? 'primary big' : 'primary big start-loading'}
@@ -300,7 +308,7 @@ export function Setup({
           </button>
         )}
       </div>
-      {chosen && !ready && (
+      {chosen && !ready && !failed && (
         <p id="start-hint" className="sr-only">
           Start is available once every model has loaded.
         </p>

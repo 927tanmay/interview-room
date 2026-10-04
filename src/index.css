@@ -455,6 +455,21 @@ input[type='radio'] {
   }
 }
 
+/* Shown only on a phone-sized touch screen. */
+.phone-note {
+  display: none;
+  margin: -10px 0 18px;
+  padding: 2px 0 2px 12px;
+  border-left: 3px solid var(--text);
+  font-weight: 600;
+}
+
+@media (max-width: 599px) and (pointer: coarse) {
+  .phone-note {
+    display: block;
+  }
+}
+
 /* Phone: the choice and Continue come straight after the top section, so the
    next step is in view; the still of the room follows them. */
 @media (max-width: 599px) {
@@ -1039,14 +1054,32 @@ button.big {
   font-variant-numeric: tabular-nums;
 }
 
-.load-now,
-.load-failed {
+.load-now {
   margin: 0;
   font-size: 0.92rem;
 }
 
+/* A model failed: what, in plain words, and Try again. Neutral, like the
+   other notices (one accent colour only). */
 .load-failed {
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+  margin-top: 4px;
+  padding: 2px 0 2px 14px;
+  border-left: 3px solid var(--text);
+}
+
+.load-failed p {
+  margin: 0;
+}
+
+.load-failed p:not(.muted) {
   font-weight: 600;
+}
+
+.load-failed button {
+  margin-top: 4px;
 }
 
 .load-details summary {

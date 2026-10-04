@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState, type Dispatch } from 'react'
 import { AiVoiceAvatar, type AiVoiceAvatarHandle } from 'react-ai-voice-avatar'
 import { usePrefersReducedMotion } from '../app/usePrefersReducedMotion'
 import { HeadShot } from './HeadShot'
-import { onTranscript, type VoiceProps } from './voiceEvents'
+import { onTranscript, reportVoiceError, type VoiceProps } from './voiceEvents'
 import type { LoadAction, LoadItemId } from './loading'
 import { registerVoiceControls, setAudioLevel, setVoice } from './voiceStore'
 
@@ -83,12 +83,7 @@ export default function VideoVoice({
             onLoad({ type: 'ready', id: 'whisper' })
             onLoad({ type: 'ready', id: 'kokoro' })
           }}
-          onError={(e) => {
-            if (e.stage === 'microphone') setVoice({ micError: e.message })
-            if (e.severity !== 'fatal') return
-            if (e.stage === 'speech-recognition') onLoad({ type: 'failed', id: 'whisper', message: e.message })
-            else if (e.stage === 'speech-synthesis') onLoad({ type: 'failed', id: 'kokoro', message: e.message })
-          }}
+          onError={(e) => reportVoiceError(e, onLoad)}
         />
         <HeadShot ready={modelReady} />
       </Canvas>

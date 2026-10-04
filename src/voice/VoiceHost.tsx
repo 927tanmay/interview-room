@@ -23,12 +23,19 @@ export function VoiceHost({
   interviewer,
   visible,
   onLoad,
+  voiceAttempt = 0,
+  gemmaAttempt = 0,
 }: {
   display: Display
   mode: Mode
   interviewer: InterviewerId
   visible: boolean
   onLoad: Dispatch<LoadAction>
+  // Try again after a failed load. A new voice attempt remounts the engine
+  // (fresh workers, back on Kokoro); a new Gemma attempt reloads only Gemma.
+  // Files that finished downloading come from OPFS, so a retry is quick.
+  voiceAttempt?: number
+  gemmaAttempt?: number
 }) {
   const { avatar, voice, name } = INTERVIEWERS[interviewer]
   const gemma = useRef<GemmaClient | null>(null)
@@ -78,7 +85,7 @@ export function VoiceHost({
       attachGemma(null)
       client.dispose()
     }
-  }, [mode, onLoad])
+  }, [mode, onLoad, gemmaAttempt])
 
   return (
     // Off stage rather than display:none while hidden: the 3D canvas needs a
@@ -88,6 +95,7 @@ export function VoiceHost({
       {display === 'video' ? (
         <Suspense fallback={<div className="stage stage-video" aria-hidden="true" />}>
           <VideoVoice
+            key={voiceAttempt}
             onLoad={onLoad}
             visible={visible}
             onSubmit={onSubmit}
@@ -99,6 +107,7 @@ export function VoiceHost({
         </Suspense>
       ) : (
         <PhoneVoice
+          key={voiceAttempt}
           onLoad={onLoad}
           onSubmit={onSubmit}
           onInterrupt={onInterrupt}

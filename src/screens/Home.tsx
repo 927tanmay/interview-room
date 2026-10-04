@@ -50,6 +50,11 @@ export function Home({ device, onChooseMode }: { device: DeviceCheck; onChooseMo
             Interview Room
           </h1>
           <p className="hero-lede">Practice a real interview out loud, then look back at what you said.</p>
+          {/* Phone-sized touch screens only (CSS). */}
+          <p className="phone-note">
+            Built for a laptop. On a phone it would download{' '}
+            {formatBytes(totalBytes(downloadsFor('light')))} and probably can't run it.
+          </p>
           <ul className="hero-points">
             {POINTS.map((p) => (
               <li key={p.icon}>

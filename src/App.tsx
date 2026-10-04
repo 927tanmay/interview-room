@@ -1,4 +1,4 @@
-import { lazy, Suspense, useReducer } from 'react'
+import { lazy, Suspense, useReducer, useState } from 'react'
 import { appReducer, initialState, isVoiceMounted } from './app/state'
 import { useDeviceCheck } from './app/useDeviceCheck'
 import { PrivacyNote } from './components/PrivacyNote'
@@ -6,7 +6,8 @@ import { currentSnapshot, stopInterview, takeDevTimeline } from './interview/ses
 import { createReport } from './report/report'
 import { saveReport } from './report/store'
 import { VoiceHost } from './voice/VoiceHost'
-import { loadReducer } from './voice/loading'
+import { reportVoiceError } from './voice/voiceEvents'
+import { failedIds, loadReducer } from './voice/loading'
 import { voiceControls } from './voice/voiceStore'
 import { Home } from './screens/Home'
 import { Interview } from './screens/Interview'
@@ -25,6 +26,29 @@ const devPanel = import.meta.env.DEV ? new URLSearchParams(location.search).get(
 function App() {
   const [state, dispatch] = useReducer(appReducer, initialState)
   const [load, dispatchLoad] = useReducer(loadReducer, {})
+  // Try again after a failed load: only what failed is loaded again.
+  const [attempts, setAttempts] = useState({ voice: 0, gemma: 0 })
+  // Dev only: feed the setup screen the package's own error reports, to test
+  // the failure path without a broken network:
+  //   __voiceError({ stage: 'worker', severity: 'fatal', message: 'Failed to fetch' })
+  if (import.meta.env.DEV) {
+    Object.assign(window, {
+      __voiceError: (e: Parameters<typeof reportVoiceError>[0]) => reportVoiceError(e, dispatchLoad),
+      __load: dispatchLoad,
+    })
+  }
+  const retryFailed = () => {
+    const failed = failedIds(load)
+    if (!failed.length) return
+    // Whisper, Kokoro and the avatar share one voice engine, so a fresh engine
+    // loads all three; whichever already finished comes straight from the
+    // device and stays shown as ready. Start waits for the failed ones, which
+    // only turn ready once the new engine is fully up.
+    const voice = failed.some((id) => id !== 'gemma')
+    const gemma = failed.includes('gemma')
+    dispatchLoad({ type: 'retry', ids: failed })
+    setAttempts((a) => ({ voice: a.voice + (voice ? 1 : 0), gemma: a.gemma + (gemma ? 1 : 0) }))
+  }
   const device = useDeviceCheck()
 
   const FullPanel = devPanel === 'room' ? RoomPreview : devPanel === 'avatar' ? AvatarPreview : null
@@ -71,6 +95,7 @@ function App() {
               dispatch({ type: 'startInterview' })
             }}
             onBack={() => dispatch({ type: 'goHome' })}
+            onRetry={retryFailed}
           />
         )}
         {state.screen === 'interview' && state.display && (
@@ -111,6 +136,8 @@ function App() {
           interviewer={state.settings.interviewer}
           visible={state.screen === 'interview'}
           onLoad={dispatchLoad}
+          voiceAttempt={attempts.voice}
+          gemmaAttempt={attempts.gemma}
         />
       )}
 

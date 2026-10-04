@@ -23,6 +23,8 @@ export type LoadAction =
   | { type: 'progress'; id: LoadItemId; pct: number }
   | { type: 'ready'; id: LoadItemId }
   | { type: 'failed'; id: LoadItemId; message: string }
+  // Try again: the failed models start over (finished files are in OPFS).
+  | { type: 'retry'; ids: LoadItemId[] }
 
 export function itemsFor(display: Display): LoadItemId[] {
   return display === 'video' ? ['whisper', 'kokoro', 'gemma', 'avatar'] : ['whisper', 'kokoro', 'gemma']
@@ -33,6 +35,11 @@ export function loadReducer(state: LoadState, action: LoadAction): LoadState {
     return Object.fromEntries(
       action.items.map((id) => [id, { pct: 0, phase: 'waiting', cached: false } satisfies LoadItem]),
     )
+  }
+  if (action.type === 'retry') {
+    const next = { ...state }
+    for (const id of action.ids) if (next[id]) next[id] = { pct: 0, phase: 'waiting', cached: false }
+    return next
   }
   const item = state[action.id]
   if (!item || item.phase === 'ready' || item.phase === 'failed') return state
@@ -69,6 +76,10 @@ export function overallProgress(mode: Mode, state: LoadState): number {
     done += (bytes * state[id]!.pct) / 100
   }
   return total ? Math.min(100, Math.round((done / total) * 100)) : 0
+}
+
+export function failedIds(state: LoadState): LoadItemId[] {
+  return (Object.keys(state) as LoadItemId[]).filter((id) => state[id]!.phase === 'failed')
 }
 
 export function allReady(state: LoadState): boolean {

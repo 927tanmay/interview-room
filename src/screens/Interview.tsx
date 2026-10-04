@@ -82,7 +82,7 @@ export function Interview({
           <p className="notice-title">The microphone isn't available</p>
           <p>
             Allow microphone access for this page (the icon in the address bar), check that a
-            microphone is connected, then press Resume. ({voice.micError})
+            microphone is connected, then press Resume.
           </p>
         </div>
       )}
