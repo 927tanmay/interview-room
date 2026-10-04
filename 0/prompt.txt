@@ -71,3 +71,7 @@ yes commit the changes and work on the focus rules
 ---
 
 yes build the report pages ui and functionality
+
+---
+
+please commit this and plan for 8
