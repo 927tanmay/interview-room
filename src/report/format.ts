@@ -9,6 +9,12 @@ export function formatDuration(ms: number): string {
   return s === 0 ? `${min} min` : `${min} min ${s} s`
 }
 
+// "0.8 s", "4.2 s", "12 s": tenths under 10 seconds.
+export function formatSeconds(ms: number): string {
+  const s = ms / 1000
+  return s < 10 ? `${s.toFixed(1)} s` : `${Math.round(s)} s`
+}
+
 // "1 time", "3 times".
 export function times(n: number): string {
   return n === 1 ? '1 time' : `${n} times`

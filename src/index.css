@@ -1086,6 +1086,318 @@ button.link:hover {
   font-size: 0.92rem;
 }
 
+/* Report */
+
+.report-meta {
+  margin-bottom: 8px;
+}
+
+.report-section {
+  margin-top: 28px;
+}
+
+.report-section > h2 {
+  font-size: 1.2rem;
+  margin-bottom: 12px;
+}
+
+.report-section h3 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 0 0 6px;
+}
+
+a {
+  color: var(--accent);
+  text-underline-offset: 3px;
+}
+
+.focus-list,
+.plain-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.focus-item p:last-child {
+  margin-bottom: 0;
+}
+
+.focus-from {
+  font-size: 0.92rem;
+}
+
+.charts {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+@media (min-width: 760px) {
+  .charts {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.chart {
+  margin: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px 14px 8px;
+}
+
+.chart figcaption {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.chart-label,
+.chart-value,
+.chart-note {
+  font: 14px var(--sans);
+  fill: var(--text);
+}
+
+.chart-value {
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-note,
+.chart-muted {
+  fill: var(--muted);
+  font-size: 12.5px;
+}
+
+.chart-bar {
+  fill: var(--accent);
+}
+
+.chart-past-bg {
+  fill: var(--accent-soft);
+}
+
+.chart-past-stripe {
+  fill: var(--accent);
+  opacity: 0.55;
+}
+
+.chart-band {
+  fill: rgba(255, 255, 255, 0.11);
+}
+
+.chart-marker {
+  stroke: var(--text);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+}
+
+.answer-card {
+  margin-bottom: 14px;
+  scroll-margin-top: 16px;
+}
+
+.answer-card > .label:first-child {
+  margin-top: 0;
+}
+
+h3.answer-question {
+  font-size: 1.12rem;
+  line-height: 1.45;
+  margin-bottom: 10px;
+}
+
+.answer-card .actions {
+  margin-top: 12px;
+}
+
+.quote {
+  border-left: 3px solid var(--border);
+  padding-left: 14px;
+  margin: 8px 0 12px;
+}
+
+/* Marked by shape as well as tone: dotted underline, bold, stripes. */
+.quote-filler {
+  text-decoration: underline dotted;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+}
+
+.quote-number {
+  font-weight: 700;
+}
+
+.quote-past {
+  color: var(--muted);
+  background: repeating-linear-gradient(
+    -45deg,
+    transparent 0 6px,
+    rgba(255, 255, 255, 0.05) 6px 12px
+  );
+}
+
+.quote-gap,
+.quote-over-mark {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 0 8px;
+  margin: 0 4px;
+  line-height: 1.6;
+}
+
+.follow-up {
+  margin-top: 4px;
+}
+
+.follow-up .said {
+  margin-bottom: 4px;
+}
+
+.measured {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 8px 18px;
+  margin: 14px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  font-size: 0.95rem;
+}
+
+.measured dt {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.measured dd {
+  margin: 0;
+}
+
+.your-marks {
+  margin-top: 6px;
+}
+
+.marks-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.marks-list li {
+  display: grid;
+  grid-template-columns: 6.5rem 1fr;
+  gap: 10px;
+}
+
+.mark-word {
+  font-weight: 600;
+}
+
+.mark-missed .mark-word,
+.mark-none .mark-word {
+  color: var(--muted);
+}
+
+.marks-list .point-tag {
+  margin-right: 6px;
+}
+
+.how-measured ul {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--muted);
+  font-size: 0.93rem;
+}
+
+.how-measured li {
+  margin-bottom: 6px;
+}
+
+.how-measured strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* Printing the report (Save as PDF): dark on white, no glass, no controls. */
+@media print {
+  :root {
+    --text: #111;
+    --muted: #444;
+    --accent: #2c4f8f;
+    --accent-soft: rgba(44, 79, 143, 0.15);
+    --border: #bbb;
+    --surface: transparent;
+    font-size: 12pt;
+    background: #fff;
+    color: #111;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  .app {
+    display: block;
+    max-width: none;
+    padding: 0;
+  }
+
+  .glass,
+  .screen {
+    background: none;
+    border: none;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    padding: 0;
+    animation: none;
+  }
+
+  .no-print,
+  footer,
+  button {
+    display: none !important;
+  }
+
+  .answer-card,
+  .chart,
+  .focus-item {
+    break-inside: avoid;
+  }
+
+  .chart-band {
+    fill: rgba(0, 0, 0, 0.06);
+  }
+
+  .quote-filler {
+    background: rgba(0, 0, 0, 0.06);
+  }
+
+  .quote-past {
+    background: repeating-linear-gradient(-45deg, transparent 0 6px, rgba(0, 0, 0, 0.06) 6px 12px);
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

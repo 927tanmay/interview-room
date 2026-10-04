@@ -60,6 +60,7 @@ function App() {
             mode={state.mode}
             display={state.display}
             settings={state.settings}
+            practice={state.practice}
             load={load}
             onChooseDisplay={(display, interviewer) => dispatch({ type: 'chooseDisplay', display, interviewer })}
             onSettingsChange={(patch) => dispatch({ type: 'updateSettings', patch })}
@@ -76,6 +77,7 @@ function App() {
           <Interview
             display={state.display}
             settings={state.settings}
+            practice={state.practice}
             onEnd={() => {
               // The report is made from the engine's records as they stand
               // and saved on the device; the screen reads it from memory at
@@ -92,6 +94,7 @@ function App() {
         {state.screen === 'report' && (
           <Report
             reportId={state.reportId}
+            onPracticeQuestion={(question) => dispatch({ type: 'practiceQuestion', question })}
             onPracticeAgain={() => dispatch({ type: 'practiceAgain' })}
             onHome={() => dispatch({ type: 'goHome' })}
           />

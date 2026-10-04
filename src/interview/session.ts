@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react'
 import { onVoiceChange, voiceControls } from '../voice/voiceStore'
 import type { GemmaClient } from '../gemma/GemmaClient'
-import { pickQuestions } from './bank'
+import { pickQuestions, type BankQuestion } from './bank'
 import { InterviewEngine, type EngineSnapshot } from './engine'
 import { FULL_LOOP_COUNT, INTERVIEWERS, type InterviewSettings } from './settings'
 import { makeWriter } from './writer'
@@ -20,9 +20,10 @@ export function attachGemma(client: GemmaClient | null) {
   gemma = client
 }
 
-export function startInterview(settings: InterviewSettings) {
+// `only`: practice one question again (from the report) instead of a new set.
+export function startInterview(settings: InterviewSettings, only: BankQuestion | null = null) {
   stopInterview()
-  const questions = pickQuestions({
+  const questions = only ? [only] : pickQuestions({
     round: settings.round,
     track: settings.track,
     level: settings.level,

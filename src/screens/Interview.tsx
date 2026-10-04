@@ -3,6 +3,7 @@ import type { Display } from '../app/state'
 import { AnswerTimer } from '../components/AnswerTimer'
 import { ProgressDots } from '../components/ProgressDots'
 import { ScreenFrame } from '../components/ScreenFrame'
+import type { BankQuestion } from '../interview/bank'
 import type { ExchangeKind, PauseReason } from '../interview/engine'
 import { interview, startInterview, useInterview } from '../interview/session'
 import type { InterviewSettings } from '../interview/settings'
@@ -35,10 +36,12 @@ export function Interview({
   display,
   settings,
   onEnd,
+  practice = null,
 }: {
   display: Display
   settings: InterviewSettings
   onEnd: () => void
+  practice?: BankQuestion | null
 }) {
   const voice = useVoice()
   const state = useInterview()
@@ -48,8 +51,8 @@ export function Interview({
   useEffect(() => {
     if (started.current) return
     started.current = true
-    startInterview(settings)
-  }, [settings])
+    startInterview(settings, practice)
+  }, [settings, practice])
 
   const finished = state?.phase === 'done'
   // The engine is busy while Gemma words a follow-up; the package is idle then.

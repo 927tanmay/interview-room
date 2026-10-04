@@ -52,7 +52,12 @@ export default function ReportPreview() {
           </span>
         </div>
       </div>
-      <Report reportId={id} onPracticeAgain={() => void makeFake()} onHome={() => location.assign('/')} />
+      <Report
+        reportId={id}
+        onPracticeAgain={() => void makeFake()}
+        onPracticeQuestion={(q) => alert(`Would practice: ${q.question}`)}
+        onHome={() => location.assign('/')}
+      />
     </>
   )
 }

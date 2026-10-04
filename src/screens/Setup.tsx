@@ -5,7 +5,7 @@ import { LoadProgress } from '../components/LoadProgress'
 import { MicCheck } from '../components/MicCheck'
 import { ScreenFrame } from '../components/ScreenFrame'
 import { allReady, type LoadState } from '../voice/loading'
-import type { Level, Track } from '../interview/bank'
+import type { BankQuestion, Level, Track } from '../interview/bank'
 import type { Mood } from '../interview/lines'
 import {
   availableCount,
@@ -42,6 +42,7 @@ export function Setup({
   mode,
   display,
   settings,
+  practice = null,
   load,
   onChooseDisplay,
   onSettingsChange,
@@ -51,6 +52,8 @@ export function Setup({
   mode: Mode
   display: Display | null
   settings: InterviewSettings
+  // "Practice this one again" from the report: only this question is asked.
+  practice?: BankQuestion | null
   load: LoadState
   onChooseDisplay: (display: Display, interviewer: InterviewerId) => void
   onSettingsChange: (patch: Partial<InterviewSettings>) => void
@@ -75,7 +78,14 @@ export function Setup({
   const countMax = settings.round === 'full' ? FULL_LOOP_COUNT : Math.min(5, availableCount(settings.round, settings.track, settings.level))
 
   return (
-    <ScreenFrame title="Set up your interview">
+    <ScreenFrame title={practice ? 'Practice one question again' : 'Set up your interview'}>
+      {practice && (
+        <section aria-labelledby="practice-title" className="panel">
+          <h2 id="practice-title">The question</h2>
+          <p className="question">{practice.question}</p>
+          <p className="muted">Just this one, with a follow-up, then a new report.</p>
+        </section>
+      )}
       {chosen ? (
         <section aria-labelledby="display-title" className="panel">
           <h2 id="display-title" ref={chosenRef} tabIndex={-1}>
@@ -145,50 +155,54 @@ export function Setup({
             <h2 id="options-title">Your interview</h2>
             <p className="muted">Fill this in while the models load.</p>
 
-            <ChoiceChips<Track>
-              name="track"
-              legend="Track"
-              options={[
-                { value: 'frontend', label: 'Frontend' },
-                { value: 'backend', label: 'Backend' },
-                { value: 'ml', label: 'Machine learning' },
-              ]}
-              value={settings.track}
-              onChange={(track) => set({ track })}
-            />
-            <ChoiceChips<Level>
-              name="level"
-              legend="Level"
-              options={[
-                { value: 'intern', label: 'Intern' },
-                { value: 'junior', label: 'Junior' },
-                { value: 'mid', label: 'Mid-level' },
-                { value: 'senior', label: 'Senior' },
-              ]}
-              value={settings.level}
-              onChange={(level) => set({ level })}
-            />
-            <ChoiceChips<RoundChoice>
-              name="round"
-              legend="Round"
-              options={[
-                { value: 'full', label: 'Full loop' },
-                { value: 'behavioural', label: 'Behavioural' },
-                { value: 'technical', label: 'Technical' },
-                { value: 'hr', label: 'HR' },
-              ]}
-              value={settings.round}
-              onChange={(round) => set({ round })}
-              hint={ROUND_DETAIL[settings.round]}
-            />
-            {settings.round !== 'full' && (
-              <ChoiceChips<number>
-                name="count"
-                legend="Questions"
-                options={[3, 4, 5].map((n) => ({ value: n, label: String(n), disabled: n > countMax }))}
-                value={settings.count}
-                onChange={(count) => set({ count })}
+            {!practice && (
+              <>
+              <ChoiceChips<Track>
+                name="track"
+                legend="Track"
+                options={[
+                  { value: 'frontend', label: 'Frontend' },
+                  { value: 'backend', label: 'Backend' },
+                  { value: 'ml', label: 'Machine learning' },
+                ]}
+                value={settings.track}
+                onChange={(track) => set({ track })}
               />
+              <ChoiceChips<Level>
+                name="level"
+                legend="Level"
+                options={[
+                  { value: 'intern', label: 'Intern' },
+                  { value: 'junior', label: 'Junior' },
+                  { value: 'mid', label: 'Mid-level' },
+                  { value: 'senior', label: 'Senior' },
+                ]}
+                value={settings.level}
+                onChange={(level) => set({ level })}
+              />
+              <ChoiceChips<RoundChoice>
+                name="round"
+                legend="Round"
+                options={[
+                  { value: 'full', label: 'Full loop' },
+                  { value: 'behavioural', label: 'Behavioural' },
+                  { value: 'technical', label: 'Technical' },
+                  { value: 'hr', label: 'HR' },
+                ]}
+                value={settings.round}
+                onChange={(round) => set({ round })}
+                hint={ROUND_DETAIL[settings.round]}
+              />
+              {settings.round !== 'full' && (
+                <ChoiceChips<number>
+                  name="count"
+                  legend="Questions"
+                  options={[3, 4, 5].map((n) => ({ value: n, label: String(n), disabled: n > countMax }))}
+                  value={settings.count}
+                  onChange={(count) => set({ count })}
+                />
+              )}
+              </>
             )}
             <ChoiceChips<number>
               name="answer-length"

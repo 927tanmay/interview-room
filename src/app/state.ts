@@ -1,3 +1,4 @@
+import type { BankQuestion } from '../interview/bank'
 import { DEFAULT_SETTINGS, normalise, type InterviewerId, type InterviewSettings } from '../interview/settings'
 
 // App-level state: which screen is showing and what the candidate chose.
@@ -20,6 +21,9 @@ export type AppState = {
   settings: InterviewSettings
   // The report of the interview that just ended (saved on the device).
   reportId: string | null
+  // "Practice this one again" from the report: the next interview asks only
+  // this question (as it was asked then). Null for a normal interview.
+  practice: BankQuestion | null
 }
 
 export type AppAction =
@@ -29,9 +33,10 @@ export type AppAction =
   | { type: 'startInterview' }
   | { type: 'finishInterview'; reportId: string }
   | { type: 'practiceAgain' }
+  | { type: 'practiceQuestion'; question: BankQuestion }
   | { type: 'goHome' }
 
-export const initialState: AppState = { screen: 'home', mode: null, display: null, settings: DEFAULT_SETTINGS, reportId: null }
+export const initialState: AppState = { screen: 'home', mode: null, display: null, settings: DEFAULT_SETTINGS, reportId: null, practice: null }
 
 export function appReducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {
@@ -52,9 +57,11 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     case 'finishInterview':
       return { ...state, screen: 'report', reportId: action.reportId }
     case 'practiceAgain':
-      return { ...state, display: null, screen: 'setup' }
+      return { ...state, display: null, practice: null, screen: 'setup' }
+    case 'practiceQuestion':
+      return { ...state, display: null, practice: action.question, screen: 'setup' }
     case 'goHome':
-      return { ...state, display: null, screen: 'home' }
+      return { ...state, display: null, practice: null, screen: 'home' }
   }
 }
 
