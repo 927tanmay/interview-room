@@ -303,3 +303,31 @@ please commit this and plan for 8
 ---
 
 yes
+
+---
+
+yup lets work on the UI of the app now, follow my below guidelines:
+
+<pasted_content id="70fb">
+i want a ui polish pass on the home and setup pages. behaviour stays the same, this is layout and visual only. take screenshots before and after in the browser pane, at laptop width and phone width, and show me.
+
+right now it reads like a settings page. it should feel like a calm, premium product the moment it opens. what i'd change:
+
+home page:
+- drop the big outer card around everything. let the sections sit on the background, and make the gradient behind them more visible: a couple of soft, blurred colour glows, low opacity, so the glass panels actually look like glass.
+- a proper top section: the name, one line on what it does, and three small points side by side, like "talks with you", "follows up on what you said", "never leaves your laptop". the privacy line is our main point, so it moves from the footer to here.
+- show the product. a still of the avatar or the interview room next to the text, so people see what they're getting before they read anything.
+- the light and heavy cards are the main choice: bigger, with the download size shown clearly on each, a strong selected state with the accent colour and a check, and light selected by default. heavy shows as coming soon and can't be picked until it actually works.
+- the full download table goes into a "what downloads" section that's closed by default. the total for the chosen mode is always visible.
+- the device check becomes a small status chip near the top, not a full width card.
+- one clear primary button to continue. it's obvious what to do next without scrolling.
+
+setup page:
+- the interviewer card shows ananya's or aarav's face, and the choice between them happens here.
+- model loading: while it loads, one compact progress area. once everything's ready, it shrinks to one line like "models ready" with a check. no four full bars that just say ready.
+- selected chips need a much clearer selected state: accent fill, not just a lighter grey.
+- on laptop width, lay the options out in two columns so the whole form fits with less scrolling. keep the helper lines, they're good.
+- the start button sticks to the bottom so it's always in view. it shows loading progress until the models are ready, then becomes "start interview".
+
+keep everything in docs/UX.md: rounded, one radius scale, one accent colour, blur only on a few big panels, readable contrast, keyboard works, respect reduced motion. if a nicer font helps the headings, suggest one, but ask me before adding anything new.
+</pasted_content id="70fb">
