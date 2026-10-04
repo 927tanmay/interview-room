@@ -273,3 +273,46 @@ function coveredTags(report: InterviewReport, record: QuestionRecord): Set<Point
 function recordFor(report: InterviewReport, q: QuestionMeasure): QuestionRecord {
   return report.records.find((r) => r.question.id === q.questionId)!
 }
+
+// --- Next time, per answer -----------------------------------------------------
+
+// What to do next time, for each kind of point, worded as an action. The
+// point's own text follows in brackets, so the line stays specific.
+const NEXT_TIME: Record<PointTag, string> = {
+  situation: 'Set the scene in a sentence or two',
+  'own-role': 'Say what you did yourself',
+  action: 'Walk through the steps you took',
+  result: 'Say how it turned out, with a number if you have one',
+  lesson: 'Close with what you took from it',
+  example: 'Give a concrete example',
+  concept: 'Lead with the core idea',
+  'edge-case': 'Cover what happens when something goes wrong',
+  'trade-off': 'Mention the trade-off',
+  motivation: 'Say what you are moving towards',
+  framing: 'Keep it fair and positive',
+}
+
+export type NextTimeLine = { text: string; detail: string; partly: boolean }
+
+// The "next time" list on an answer card: one line per point the candidate
+// marked missed, then partly. Empty when nothing was missed, or when they
+// skipped the self-review (then the marks are not theirs to build on).
+export function nextTimeFor(report: InterviewReport, record: QuestionRecord): NextTimeLine[] {
+  if (report.reviewState === 'skipped') return []
+  const review = reviewFor(report, record)
+  const points = record.question.points ?? []
+  const line = (i: number, partly: boolean): NextTimeLine => ({
+    text: NEXT_TIME[points[i].tag],
+    detail: lowerStart(points[i].text),
+    partly,
+  })
+  const missed = points.flatMap((_, i) => (review.marks[i] === 'missed' ? [line(i, false)] : []))
+  const partly = points.flatMap((_, i) => (review.marks[i] === 'partly' ? [line(i, true)] : []))
+  return [...missed, ...partly]
+}
+
+// "A before-and-after result" -> "a before-and-after result", but leave
+// names and acronyms alone ("DNS turns…", "React…").
+function lowerStart(text: string): string {
+  return /^(A |[A-Z][a-z])/.test(text) && !/^React\b/.test(text) ? text[0].toLowerCase() + text.slice(1) : text
+}

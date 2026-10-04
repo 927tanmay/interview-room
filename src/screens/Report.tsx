@@ -4,7 +4,7 @@ import { FillerChart, FirstWordChart, LengthChart, PaceChart } from '../componen
 import { ScreenFrame } from '../components/ScreenFrame'
 import { POINT_TAGS, type BankQuestion, type Round } from '../interview/bank'
 import type { QuestionRecord } from '../interview/engine'
-import { findDisagreements, pickFocus } from '../report/focus'
+import { findDisagreements, nextTimeFor, pickFocus } from '../report/focus'
 import { formatDuration, formatSeconds, plural, times } from '../report/format'
 import { PACE, type ExchangeMeasure, type QuestionMeasure } from '../report/measure'
 import { measures, reviewFor, reviewQueue, setReviewState, type InterviewReport, type Mark } from '../report/report'
@@ -231,6 +231,7 @@ function AnswerCard({
   const review = reviewFor(report, record)
   const points = record.question.points ?? []
   const marked = review.marks.some((x) => x !== null) || review.feel !== null
+  const nextTime = nextTimeFor(report, record)
   const titleId = `${anchor(record.question.id)}-title`
 
   return (
@@ -298,6 +299,20 @@ function AnswerCard({
               ) : (
                 <p className="muted">Not reviewed.</p>
               )}
+            </div>
+          )}
+
+          {nextTime.length > 0 && (
+            <div className="next-time">
+              <p className="label">Next time</p>
+              <ul>
+                {nextTime.map((n, i) => (
+                  <li key={i}>
+                    {n.text} <span className="muted">({n.detail})</span>
+                    {n.partly && <span className="next-partly"> · you covered part of this</span>}
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
         </>

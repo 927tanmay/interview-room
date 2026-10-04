@@ -2038,6 +2038,27 @@ h3.answer-question {
   margin-right: 6px;
 }
 
+/* Next time: what to do differently, from the points marked missed or partly. */
+.next-time {
+  margin-top: 12px;
+}
+
+.next-time ul {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 4px;
+}
+
+.next-time li::marker {
+  color: var(--accent);
+}
+
+.next-partly {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
 .how-measured ul {
   margin: 0;
   padding-left: 20px;
