@@ -287,12 +287,14 @@ from their marks plus measured numbers. Built as phase 1 of that plan, steps
 
 ## Phase 8: Submission (Sun afternoon to Mon 11:00)
 
-- [ ] **8.1 README:** what it is, how to run, Light vs Heavy, credits
+- [x] **8.1 README:** what it is, how to run, Light vs Heavy, credits
   (react-ai-voice-avatar, said plainly that I maintain it and the app is new;
   transformers.js, Silero VAD, Whisper, Kokoro, Gemma), licences (Gemma 3
   under the Gemma terms, Gemma 4 Apache 2.0, Whisper MIT, Kokoro Apache-2.0,
   Silero MIT), the package fixes made this weekend (0.7.0: long answers,
-  empty replies, `speechMs`, `model-cache`).
+  empty replies, `speechMs`, `model-cache`). Done 5 Oct, with six screenshots
+  in `docs/images/`, what the report measures, a diagram, dev pages and known
+  limits.
 - [ ] **8.2 Screenshots, GIF, demo video.**
 - [ ] **8.3 Friend tries it;** note what they say.
 - [ ] **8.4 Repo public, post written** (template sections, tags
@@ -303,5 +305,15 @@ from their marks plus measured numbers. Built as phase 1 of that plan, steps
 
 - Tough mood interrupts long answers.
 - Markdown export of the report (print to PDF is done).
+- Better speech recognition, step 1: switch Whisper with the package's
+  `asrModel` prop, no package change. Try `onnx-community/whisper-base.en`
+  first (same 295 MB, English only); check it accepts the `language: 'en'` the
+  package always passes. `whisper-small.en` is more accurate on technical
+  terms but much larger and slower (maybe Heavy only). Ask before downloading.
+- Better speech recognition, step 2: run Whisper ourselves through
+  `onTranscribe` and give it the current question's vocabulary as a prompt
+  ("useEffect, dependency array, cleanup"). First check transformers.js
+  supports Whisper prompts in the browser, and that the package skips its own
+  Whisper when `onTranscribe` is set.
 - Pseudo-code round (Gemma 4 E2B got both code reviews right in run 5; needs
   more cases first).

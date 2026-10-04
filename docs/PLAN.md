@@ -17,9 +17,9 @@ Deadline: Mon 5 Oct 2026, 12:29 IST (06:59 UTC).
 
 ### Interview setup
 - Track: **Frontend**, **Backend**, **ML**.
-- Round: **Behavioural**, **Technical** (for the track), **System design**
-  (junior and up; a spoken walk-through, longer answers), **HR**, or **Full
-  loop** (intro, 2 behavioural, 2 technical, 1 HR).
+- Round: **Behavioural**, **Technical** (for the track), **HR**, or **Full
+  loop** (intro, 2 behavioural, 2 technical, 1 HR). **System design** is
+  parked (section 4).
 - Level: intern / junior / mid / senior.
 - Interviewer: Ananya or Aarav (the two avatars), mood friendly / neutral / tough.
 - **Video interview** (the 3D avatar, default) or **Phone screen** (voice only,
@@ -27,8 +27,8 @@ Deadline: Mon 5 Oct 2026, 12:29 IST (06:59 UTC).
   only the display changes. It is the first choice on the setup screen,
   loading starts once it is picked, and it cannot change after that. The
   avatar is lazy-loaded, so three.js only downloads for a video interview.
-- Questions from: the built-in bank, the candidate's own list (paste or upload
-  .txt / .csv), or a pasted job description (Gemma writes the questions).
+- Questions from the built-in bank. Later (P1, not built): the candidate's own
+  list (paste or upload .txt / .csv), or a pasted job description.
 - Number of questions and target answer length.
 
 ### The interview
@@ -37,44 +37,55 @@ Deadline: Mon 5 Oct 2026, 12:29 IST (06:59 UTC).
 - One follow-up per question, aimed by rules, worded by Gemma.
 - The interviewer handles silence, "repeat that", "what do you mean", "I don't
   know", garbled audio, a lost microphone, and model failures, out loud.
-- A live privacy meter: network requests made since the interview started
-  (target: 0).
+- Later (P1, not built): a live privacy meter, network requests made since
+  the interview started (target: 0).
 
-### The report
-- **No scores, no ratings, no percentages.** Only what was measured, plus their
-  own words:
-  - **Measured:** time per answer, words, words per minute, filler words by
-    type (each with how it was measured).
-  - **Quotes:** their answers, transcribed, with fillers highlighted and the
-    part past the target time shaded.
-  - **Plain comparisons where they help**, e.g. "Most behavioural answers aim
-    for about 2 minutes; this one was 3 min 40 s." or "A comfortable speaking
-    pace is about 120-160 words per minute; you spoke at 185."
-- Charts of the measured numbers only: answer length vs target, pace vs the
-  120-160 wpm band, filler words by type.
-- Per answer: the transcript, the numbers, the follow-up asked, and the sample
-  answer ("what a strong answer covers").
-- **STAR parts and missed key points are not measurements.** They appear only
-  if the Gemma 4 E2B eval (step 5.5) shows the review model gets them right;
-  otherwise they are left out, or shown as **"possible gaps"** in plain words
-  ("You may not have said how it turned out"), never as a tick grid or a
-  number. Run 5: Gemma 4 E2B marked all four STAR parts present in a rambling
-  answer, so as of now they are out.
-- **Deep review by Gemma 4 E2B** (Heavy mode, after the interview, on the
-  device): code review, possible gaps compared with the sample answer, and the
-  weakest answer rewritten in the candidate's own words.
-- Progress across sessions (IndexedDB): fillers per minute, pace, answer length
-  over time. Export and delete.
+### The report (built, 4 Oct)
+
+Changed direction on 4 Oct: **the candidate reviews their own answers against
+what a strong answer covers, and the app never judges.** Feedback is built
+from their own marks plus measured numbers. No model is involved.
+
+- **Self-review first**, one answer at a time (about 1-2 minutes in all): the
+  question, their words and the follow-up, "how did that one feel?" (good /
+  okay / rough), then 3-5 strong-answer points beside the answer, each marked
+  covered, partly or missed. Keyboard shortcuts, progress dots, a skip to the
+  numbers. Every question outside system design has tagged points in
+  `bank.ts` (result, your role, example, trade-off, edge case…).
+- **No scores, no ratings, no percentages.** Only what was measured, each with
+  how it was measured: answer length (voice detector, first word to last),
+  pace (words over speaking time, against 120-160), time to first word,
+  pauses over 3 s, filler phrases, "I" against "we", numbers mentioned.
+  Missing timings show as "not measured". Skipped or silent answers are shown
+  as such.
+- **Up to three things to work on**, picked by plain rules: the kind of point
+  marked missed most often, an answer that felt good but was mostly missed,
+  the furthest over target; then fillers and pace. Each says where it came
+  from and links to the answer.
+- **Gentle second looks** where marks and numbers disagree: result marked
+  covered with no number heard; own role covered with far more "we" than "I".
+- **Per answer:** their words with fillers, numbers and pauses marked and the
+  part past the target shaded; the follow-up and reply; the numbers; their
+  marks; **Practice this one again**.
+- Plain SVG charts with the numbers on them. Saved in IndexedDB; prints to
+  PDF.
+- **Phase 2 (not started, waiting for a go):** a small embedding model that
+  highlights the closest sentence for a point, only after the candidate has
+  marked it.
+- **Deep review by Gemma 4 E2B** (code review, possible gaps, rewritten
+  answer) stays with Heavy mode, phase H.
+- Later (P1): progress across sessions (fillers per minute, pace, answer
+  length over time), export and delete.
 
 ### Models (all open-weight, all in the browser)
 
 | Job | Model | Size | Status |
 |---|---|---|---|
 | Speech detection | Silero VAD (legacy) | 1.8 MB | via the package |
-| Hearing | Whisper base (fp32 on WebGPU) | 295 MB | via the package |
+| Hearing | Whisper base (fp32 on WebGPU) | 295 MB | via the package; mishears some technical terms (switching model is a P2) |
 | Voice | Kokoro-82M (fp32) | 326 MB | via the package |
 | Gemma, **Light** mode | Gemma 3 1B (q4) | 880 MB | tested: good follow-ups with a guard, cannot judge |
-| Gemma, **Heavy** mode | Gemma 4 E2B (q4f16, text parts) | 3.13 GB | tested: better follow-ups at the same speed on an M4, reviews code correctly |
+| Gemma, **Heavy** mode | Gemma 4 E2B (q4f16, text parts) | 3.13 GB | tested in the eval: better follow-ups, reviews code correctly. **Shown as "coming soon"** in the app until it works end to end |
 | Runtime | ONNX Runtime WebAssembly | ~67 MB | package (1.29.0) + Gemma worker |
 | Avatar (video only) | three.js code + one avatar | ~7 MB | via the package |
 
@@ -83,7 +94,10 @@ Sizes include tokenizer and config files, measured 3 Oct 2026 (source of truth:
 
 Two modes, chosen by the candidate on the home page. **Only the chosen mode's
 Gemma is downloaded**; the other is never fetched unless the candidate switches
-mode. If the system cannot run Heavy, the app falls back to Light and says why.
+mode. **For now Heavy shows as "coming soon"** and cannot be picked
+(`HEAVY_AVAILABLE` in `src/app/downloads.ts`); the home page shows Light's
+download breakdown. Once Heavy is on: if the system cannot run it, the app
+says why and offers Light.
 "Cannot run Heavy" means the WebGPU adapter lacks `shader-f16` (needed for
 q4f16) or loading Gemma 4 E2B fails. Light (q4) does not need `shader-f16`.
 
@@ -92,9 +106,9 @@ q4f16) or loading Gemma 4 E2B fails. Light (q4) does not need `shader-f16`.
 - **Light:** Gemma 3 1B is the live interviewer. For weaker laptops or slow
   connections (4 min first load vs 14 min on my connection).
 
-In both modes, every number in the report is measured by code. Neither model
-judges STAR reliably yet, so STAR parts are left out unless step 5.5 shows
-otherwise. See [MODEL-TESTS.md](MODEL-TESTS.md), runs 4 and 5.
+In both modes, every number in the report is measured by code, and the
+judging of each answer is the candidate's own (the self-review). Neither model
+judges STAR reliably. See [MODEL-TESTS.md](MODEL-TESTS.md), runs 4 and 5.
 
 ### Who does what
 
@@ -102,25 +116,28 @@ otherwise. See [MODEL-TESTS.md](MODEL-TESTS.md), runs 4 and 5.
 |---|---|
 | Microphone, VAD, Whisper, Kokoro, avatar, barge-in | react-ai-voice-avatar |
 | Interview order, timing, what to probe, recovery | The app's engine (plain code) |
-| Follow-ups, reactions, rephrasing, questions from a JD | The mode's Gemma (app's own worker, through `onSubmit`) |
-| Code review, possible gaps, rewritten answer | Gemma 4 E2B (Heavy mode) |
-| Every number (time, words, wpm, fillers) | Plain code, with how it was measured |
+| Wording the follow-up the rules chose | The mode's Gemma (app's own worker), checked by the guard |
+| Judging each answer | The candidate, in the self-review |
+| What to work on | Plain rules over their marks and the numbers |
+| Every number (length, pace, first word, pauses, fillers, I/we, numbers) | Plain code, with how it was measured |
+| Code review, possible gaps, rewritten answer | Gemma 4 E2B (Heavy mode, phase H, not built) |
 
 ---
 
 ## 2. Priorities
 
-**P0, must ship (Sat):** home page with the Light / Heavy choice (fallback to
-Light when Heavy is unsupported), setup, mic check, interview engine with follow-ups and
-recovery, interview room, per-answer metrics, report with charts and sample
-answers, first-load download screen, offline after first load, question bank
-for all three tracks.
+**P0, must ship (Sat):** home page with the Light / Heavy choice, setup, mic
+check, interview engine with follow-ups and recovery, interview room,
+self-review and measured report with charts, first-load download screen,
+question bank for all three tracks. **Done**, plus the Render deploy and a UI
+polish pass on home and setup (4 Oct).
 
-**P1, should ship (Sun morning):** Gemma 4 deep review, progress history, own
-question upload, questions from a JD, privacy meter, Render deploy.
+**P1, should ship (Sun morning):** Heavy and the Gemma 4 deep review, progress
+history, own question upload, questions from a JD, privacy meter, fully
+offline (self-host the VAD files and ONNX runtime). **Not built yet.**
 
-**P2, if time:** tough mood interrupts long answers, Markdown / print export,
-pseudo-code round (only if Gemma 4 judges code correctly in the test).
+**P2, if time:** tough mood interrupts long answers, Markdown export (print to
+PDF is done), pseudo-code round, a better Whisper (TASKS.md: P2).
 
 ---
 
@@ -133,6 +150,7 @@ pseudo-code round (only if Gemma 4 judges code correctly in the test).
 | Sat evening | Report and charts. Push to GitHub, first Render deploy. |
 | Sun morning | P1 features, polish, fix what the first runs show. |
 | Sun afternoon | README, screenshots, demo video. |
+| **Actual, Sun 4 Oct** | Render deploy; the self-review report (steps 1-7); first real run and its fixes; home and setup polish; README with screenshots. |
 | Sun evening | Friend tries it; note what he says. |
 | Mon morning | Post written and published by ~11:00 (deadline 12:29). |
 
@@ -165,9 +183,12 @@ length is tuned in step 4.3). A short silence never ends an answer.
 | Technical question | Ask a "what happens if" edge case |
 
 Every Gemma line passes a guard: strip quotes and markdown, drop praise and
-lines echoed from the question or answer, keep exactly one question. If the
-guard rejects it, a written line for that angle is spoken instead. (Test run:
-8 of 12 Gemma lines passed; the rest fell back cleanly.)
+lines echoed from the question or answer, keep exactly one question. Outcome
+and ownership follow-ups must ask about that; a missing-point follow-up must
+use the bank's words for that point (added after the first real run, where
+Gemma drifted off the point). If the guard rejects it, a written line for that
+angle is spoken instead. (Test run: 8 of 12 Gemma lines passed; the rest fell
+back cleanly.)
 
 ### When something goes wrong, the interviewer says so
 
@@ -177,9 +198,10 @@ guard rejects it, a written line for that angle is spoken instead. (Test run:
 | Still silent (25 s) | Timer | "No problem, let's come back to that." Marks it skipped. |
 | "Can you repeat that?", "Sorry?" | Phrase match | Repeats the question |
 | "What do you mean?" | Phrase match | Rephrases the question using its intent |
-| "I don't know", "pass" | Phrase match | One nudge, then moves on |
+| "I don't know", "pass", "sorry, I don't know" | Phrase match | One nudge, then moves on |
+| "Can we skip this one?", "let's move on" | Phrase match | Skips the question (a skipped follow-up keeps the answer) |
 | Garbled or one-word transcript | Length, known Whisper noise | "Sorry, I didn't catch that. Could you say it again?" |
-| Answer runs past the target | Timer | Tough: "Let me stop you there. In one sentence, what was the result?" |
+| Answer runs past the target | Timer | The timer turns red. (Tough interrupting: P2, not built.) |
 | "Can we pause / stop?" | Phrase match | Pauses or ends |
 | Microphone lost | `micError` | Banner, and says so |
 | Gemma fails mid-interview | Worker error | Carries on with written follow-ups; the report notes it |
@@ -240,16 +262,18 @@ Gemma only sees the current question's intent and the angle for this turn.
 
 ### Rules
 - [x] Brand-new repo, first commit 3 Oct 2026 (inside the window).
-- [ ] Repo public under 927tanmay before submitting.
+- [x] Repo public under 927tanmay before submitting
+      (github.com/927tanmay/interview-room).
 - [ ] README notes any commit made after Mon 5 Oct 06:59 UTC.
-- [ ] Credits in README and post: react-ai-voice-avatar (I maintain it; say so
+- [x] Credits in the README: react-ai-voice-avatar (I maintain it; said
       plainly, and that this app is new), transformers.js, Silero VAD, Whisper,
-      Kokoro, Gemma, and any copied file (e.g. the OPFS cache from the package).
-- [ ] Model licences listed (Gemma terms, Whisper MIT, Kokoro Apache-2.0,
-      Silero MIT).
+      Kokoro, Gemma, ONNX Runtime, three.js, Inter. Still to do in the post.
+- [x] Model licences listed in the README (Gemma terms, Gemma 4 Apache-2.0,
+      Whisper MIT, Kokoro Apache-2.0, Silero MIT).
 - [ ] Post in English, using the template sections, tags `devchallenge,
       weekendchallenge, hf26challenge`.
-- [ ] Demo link (Render) and a video.
+- [x] Demo link (Render): https://interview-room-iooj.onrender.com
+- [ ] A video.
 - [ ] Prize Categories section lists every category entered.
 
 ### Package changes made during the weekend
@@ -297,8 +321,13 @@ with Gemma and Render as the strongest categories.
 ## 8. Open decisions
 1. ~~Gemma 4 E2B download for testing~~ Done: runs 4 and 5 in MODEL-TESTS.md;
    Light / Heavy modes chosen on the home page.
-2. Light mode after the interview: no deep review, or an opt-in "Get deep
-   review" button that downloads Gemma 4 E2B (3.11 GB) only when pressed.
-3. Entire CLI: install and connect to Claude Code now, so the rest of the build
-   is captured.
-4. Backboard model comparison: worth an hour, or skip.
+2. ~~Light mode after the interview~~ Decided: the self-review report, no
+   model judging. A deep review stays with Heavy (phase H).
+3. ~~Entire CLI~~ Done: checkpoints are pushed with each commit, with email
+   redaction on.
+4. Backboard model comparison: skipped for now.
+5. Heavy: turn on once it works end to end (`HEAVY_AVAILABLE`), or leave as
+   "coming soon" for the submission.
+6. Better speech recognition after the challenge: `whisper-base.en` through
+   `asrModel` first, then our own Whisper with the question's vocabulary
+   (TASKS.md: P2).
