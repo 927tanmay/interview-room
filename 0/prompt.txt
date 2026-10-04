@@ -369,3 +369,7 @@ i guess let it be for now given the deadline we can later anyway switch on a bet
 ---
 
 yes
+
+---
+
+yes update the plan and task md
