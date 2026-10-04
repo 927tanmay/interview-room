@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { Exchange } from '../interview/engine'
+import { findDisagreements, pickFocus } from '../report/focus'
 import { measures, type InterviewReport } from '../report/report'
 
 // Dev only: everything the engine recorded in the interview, and what the
@@ -58,6 +59,8 @@ function measured(r: InterviewReport) {
     timing: { ...x.timing, longGaps: x.timing.longGaps.map((g) => g.ms) },
   })
   return {
+    focus: pickFocus(r, m),
+    disagreements: findDisagreements(r, m),
     ...m,
     questions: m.questions.map((q) => ({
       id: q.questionId,
