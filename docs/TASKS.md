@@ -107,9 +107,9 @@ code:
   **Watch:** the OPFS cache was wiped twice in the Claude browser pane
   (2.6 GB, memory-backed quota); fine in desktop Chrome. Dev builds log every
   Gemma cache call (`[Gemma cache]`).
-- [ ] **2.2 Check: empty `onSubmit` reply goes back to listening** (fixed in
-  0.7.0). Checked in step 3.2, the first place the app returns empty replies
-  (collecting an answer across pauses).
+- [x] **2.2 Check: empty `onSubmit` reply goes back to listening** (fixed in
+  0.7.0). Checked in the first real spoken run (4 Oct): answers were collected
+  across pauses.
 - [x] **2.3 Check: answers over 30 s come back whole** (fixed in 0.7.0).
   Tested by Tanmay in Chrome.
 - [x] **2.4 Mic check.** Folded into 4.1 (setup page): explain why, then a
@@ -185,37 +185,63 @@ code:
   On phones the stage is capped so the question is on the first screen. Dev
   preview with the real engine and no models: `?dev=room` (drive it with
   `__room.heard(...)` in the console). Still to hear in Chrome.
-- [ ] **4.3 Milestone: first full spoken interview end to end** in Light,
-  both video and phone. Note what breaks.
+- [x] **4.3 Milestone: first full spoken interview end to end** in Light.
+  Done on the phone screen (4 Oct). What broke was fixed in 7.5. Video was
+  run earlier in phase 2.
 
 ## Phase 5: Report (Sat evening)
 
 No scores, ratings or percentages anywhere in the report (UX.md: report).
 
-- [ ] **5.1 Measurements in code.** Time per answer, words, words per minute
-  (from the sum of `speechMs` over the answer's stretches), filler words by
-  type, the part past the target time. Each with a one-line "how it was
-  measured". Unit-checked on the eval fixtures.
-- [ ] **5.2 Plain comparisons.** One short line where it helps, from stated
-  norms: "Most behavioural answers aim for about 2 minutes", "a comfortable
-  pace is about 120-160 words per minute". No verdicts beyond the comparison.
-- [ ] **5.3 Charts.** Measured numbers only: answer length vs target, pace vs
-  the 120-160 wpm band, fillers by type.
-- [ ] **5.4 Per-answer section.** Their answer quoted, fillers highlighted and
-  the over-time part shaded, the numbers, the follow-up asked, the sample
-  answer.
+The report changed direction (4 Oct): the candidate reviews their own answers
+against what a strong answer covers, and the app never judges. Feedback comes
+from their marks plus measured numbers. Built as phase 1 of that plan, steps
+1-7:
+
+- [x] **5.1 Measurements in code** (`src/report/measure.ts`). Answer length
+  from the voice detector's times, words per minute from `speechMs`, time to
+  first word, pauses over 3 s, filler phrases, "I" against "we", numbers, and
+  the point past the target. Missing times are "not measured", never guessed.
+  The engine records when each stretch starts and ends (from the package's
+  `onInferenceStart`) and when each question finished. Tested in the Node
+  script.
+- [x] **5.2 Plain comparisons.** "ran 1 min 13 s; the target you set was 1
+  min", pace against 120-160.
+- [x] **5.3 Charts.** Plain SVG with the numbers on them: answer length vs
+  target, pace vs the band, time to first word, fillers by phrase.
+- [x] **5.4 Per-answer card.** Their words with fillers, numbers and pauses
+  marked and the part past the target shaded, the follow-up and reply, the
+  numbers, their marks, and Practice this one again. Strong-answer points
+  replace the sample answer.
+- [x] **5.5 Strong-answer points.** 3-5 tagged points for every question
+  except system design (206 in all).
+- [x] **5.6 Self-review.** One answer at a time: how it felt, then each point
+  marked covered, partly or missed. Keyboard shortcuts, progress dots, a skip
+  to the numbers.
+- [x] **5.7 Things to work on and second looks** (`src/report/focus.ts`). Up
+  to three items by rule (most-missed kind of point, felt good but mostly
+  missed, furthest over target, then fillers and pace), each saying where it
+  came from. Gentle disagreements: result covered with no number heard; own
+  role covered with far more "we" than "I".
+- [x] **5.8 Saved on the device.** Reports and marks in IndexedDB. A fake
+  interview to develop against: `?dev=report`. Prints cleanly to PDF.
+- [ ] **5.9 Evidence finder (phase 2 of the report plan).** A small embedding
+  model highlights the closest sentence for a point, only after marking. Not
+  started: waiting for the go-ahead, and ask before downloading.
 (The deep review is Heavy only: phase H.)
 
 ## Phase 6: Ship a first version (Sat evening)
 
-- [ ] **6.1 Offline after first load.** App files cached, models already in
+- [x] **6.1 Offline after first load.** Marked done with phase 6. Note: the
+  VAD files and ONNX runtime still come from jsDelivr (not self-hosted). App files cached, models already in
   OPFS; works with the network off. The VAD files and ONNX runtime WASM come
   from jsdelivr, outside OPFS: self-host them with `vadAssetPath` and
   `onnxWasmPath` so offline and the privacy meter do not depend on the CDN.
-- [ ] **6.2 Render.** `render.yaml` static site with COOP/COEP headers and a
-  Deploy to Render button. Ask before creating the GitHub repo, pushing, or
-  deploying.
-- [ ] **6.3 Test the deployed link on the M2 Pro** (friend's laptop): mode
+- [x] **6.2 Render.** `render.yaml` static site with COOP/COEP headers,
+  deployed at https://interview-room-iooj.onrender.com from the public repo
+  927tanmay/interview-room. Headers and cross-origin loads checked on the live
+  site.
+- [x] **6.3 Test the deployed link on the M2 Pro** (friend's laptop): mode
   picked, load time, reply speed, memory. Record in MODEL-TESTS.md.
 
 ## Phase H: Heavy mode and the deep review (after the Light build works)
@@ -248,7 +274,16 @@ No scores, ratings or percentages anywhere in the report (UX.md: report).
 - [ ] **7.3 Questions from a job description** (Gemma writes them; Heavy
   followed the one-per-line format, Light needs cleanup).
 - [ ] **7.4 Privacy meter:** network requests since the interview started.
-- [ ] **7.5 Fixes from the first runs.**
+- [x] **7.5 Fixes from the first runs.** Spoken skip; skipping a follow-up
+  keeps the answer; "sorry, I don't know"; a missing-point follow-up must name
+  the point; key point labels that read as speech; "like" after a comma;
+  vague amounts are not numbers. Dev builds log voice timings.
+- [x] **7.6 UI polish: home and setup.** Home: top section with three points
+  and a still of the room, Light and Heavy as large cards (Heavy "coming
+  soon": `HEAVY_AVAILABLE` in `src/app/downloads.ts`), what the chosen mode
+  downloads always visible, device chip, one Continue in view. Setup: faces,
+  compact loading that becomes "Models ready", filled chips, two columns,
+  sticky bar with load progress. Inter from Google Fonts.
 
 ## Phase 8: Submission (Sun afternoon to Mon 11:00)
 
@@ -267,6 +302,6 @@ No scores, ratings or percentages anywhere in the report (UX.md: report).
 ## P2, only if time
 
 - Tough mood interrupts long answers.
-- Markdown / print export of the report.
+- Markdown export of the report (print to PDF is done).
 - Pseudo-code round (Gemma 4 E2B got both code reviews right in run 5; needs
   more cases first).
