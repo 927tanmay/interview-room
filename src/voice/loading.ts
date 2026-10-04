@@ -1,4 +1,5 @@
 import { createModelCache, isModelCacheSupported } from 'react-ai-voice-avatar/model-cache'
+import { DOWNLOADS } from '../app/downloads'
 import type { Display, Mode } from '../app/state'
 import { GEMMA_MODELS } from '../gemma/protocol'
 
@@ -49,6 +50,25 @@ export function loadReducer(state: LoadState, action: LoadAction): LoadState {
     case 'failed':
       return { ...state, [action.id]: { ...item, phase: 'failed', message: action.message } }
   }
+}
+
+// The download behind a loading row.
+export function downloadFor(id: LoadItemId, mode: Mode) {
+  const key = id === 'gemma' ? (mode === 'heavy' ? 'gemma-heavy' : 'gemma-light') : id
+  return DOWNLOADS.find((d) => d.id === key)!
+}
+
+// All the models together, weighted by size, from the bytes the loaders
+// report (UX.md: downloads, real progress only).
+export function overallProgress(mode: Mode, state: LoadState): number {
+  let total = 0
+  let done = 0
+  for (const id of Object.keys(state) as LoadItemId[]) {
+    const bytes = downloadFor(id, mode).bytes
+    total += bytes
+    done += (bytes * state[id]!.pct) / 100
+  }
+  return total ? Math.min(100, Math.round((done / total) * 100)) : 0
 }
 
 export function allReady(state: LoadState): boolean {

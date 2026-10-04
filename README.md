@@ -6,8 +6,8 @@ Frontend, backend and ML tracks; behavioural, technical and HR rounds.
 
 **Everything runs in your browser.** Speech recognition, the interviewer, its
 voice and the avatar all run on your own device. Nothing you say is uploaded;
-the only network use is downloading the models the first time, and they are
-kept on your device after that.
+the only network use is downloading the models the first time (kept on your
+device after that) and the Inter font from Google Fonts.
 
 **Demo:** https://interview-room-iooj.onrender.com (Chrome or Edge on a laptop or desktop)
 

@@ -40,6 +40,10 @@ export const DOWNLOADS: DownloadItem[] = [
   { id: 'avatar', job: 'The interviewer on screen', name: '3D avatar', bytes: 7 * MB, displays: ['video'] },
 ]
 
+// Heavy (Gemma 4 E2B) is shown on the home page but cannot be picked until it
+// works end to end (TASKS.md: H). Flip this when it does.
+export const HEAVY_AVAILABLE = false
+
 export function downloadsFor(mode: Mode, display?: Display): DownloadItem[] {
   return DOWNLOADS.filter(
     (d) =>

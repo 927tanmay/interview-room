@@ -39,7 +39,7 @@ function App() {
     devPanel === 'gemma' ? GemmaTest : devPanel === 'setup' ? SetupPreview : devPanel === 'report' ? ReportPreview : null
   if (DevPanel) {
     return (
-      <div className="app">
+      <div className={devPanel === 'setup' ? 'app app--setup' : 'app'}>
         <main>
           <Suspense fallback={null}>
             <DevPanel />
@@ -114,9 +114,12 @@ function App() {
         />
       )}
 
-      <footer>
-        <PrivacyNote />
-      </footer>
+      {/* On the home page the privacy line is part of the top section. */}
+      {state.screen !== 'home' && (
+        <footer>
+          <PrivacyNote />
+        </footer>
+      )}
     </div>
   )
 }

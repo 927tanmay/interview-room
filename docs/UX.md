@@ -36,7 +36,7 @@ interview room.
 
 - Say clearly, and keep visible on every screen, that nothing they say
   leaves the browser. The only network use is downloading the models the
-  first time.
+  first time, and the Inter font from Google Fonts.
 - Do not claim more than is true. If something does go over the network,
   the wording changes.
 

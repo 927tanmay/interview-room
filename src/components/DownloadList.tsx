@@ -1,55 +1,49 @@
-import { DOWNLOADS, downloadsFor, formatBytes, totalBytes, type DownloadItem } from '../app/downloads'
+import { DOWNLOADS, downloadsFor, formatBytes, totalBytes } from '../app/downloads'
+import type { Mode } from '../app/state'
 
-// What a first visit downloads and how big, shown before anything starts
-// (UX.md: downloads). Shared rows once, then the one row that depends on the
-// mode, then the avatar, which only a video interview needs.
-export function DownloadList() {
-  const shared = DOWNLOADS.filter((d) => !d.modes && !d.displays)
-  const byId = (id: string) => DOWNLOADS.find((d) => d.id === id)!
+// What the chosen mode downloads the first time, shown before anything starts
+// (UX.md: downloads): a bar of how the total splits across the models, then
+// each model with what it does and its size, then the total. The avatar is
+// listed apart, since only a video interview needs it. Shades of the one
+// accent colour tell the models apart; the list carries the same facts in
+// text, so the bar is decoration for screen readers.
+export function DownloadList({ mode }: { mode: Mode }) {
+  const items = [...downloadsFor(mode)].sort((a, b) => b.bytes - a.bytes)
+  const total = totalBytes(items)
+  const avatar = DOWNLOADS.find((d) => d.id === 'avatar')!
+  const shade = (i: number) => Math.max(0.22, 1 - i * 0.2)
 
   return (
-    <table className="downloads">
-      <caption>What downloads the first time</caption>
-      <thead>
-        <tr>
-          <th scope="col">Model</th>
-          <th scope="col" className="size">
-            Size
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        {shared.map((d) => (
-          <Row key={d.id} item={d} />
+    <section className="downloads" aria-labelledby="downloads-title">
+      <div className="downloads-head">
+        <h3 id="downloads-title">What {mode === 'light' ? 'Light' : 'Heavy'} downloads</h3>
+        <span className="downloads-total">{formatBytes(total)}</span>
+      </div>
+      <div className="downloads-bar" aria-hidden="true">
+        {items.map((d, i) => (
+          <span key={d.id} style={{ flexGrow: d.bytes, opacity: shade(i) }} />
         ))}
-        <Row item={byId('gemma-light')} note="Light" />
-        <Row item={byId('gemma-heavy')} note="Heavy" />
-        <Row item={byId('avatar')} note="video interview only" />
-      </tbody>
-      <tfoot>
-        <tr>
-          <th scope="row">Total, Light / Heavy</th>
-          <td className="size">
-            {formatBytes(totalBytes(downloadsFor('light')))} /{' '}
-            {formatBytes(totalBytes(downloadsFor('heavy')))}
-          </td>
-        </tr>
-      </tfoot>
-    </table>
-  )
-}
-
-function Row({ item, note }: { item: DownloadItem; note?: string }) {
-  return (
-    <tr>
-      <td>
-        <span className="download-name">{item.name}</span>
-        <span className="download-job">
-          {item.job}
-          {note && ` (${note})`}
-        </span>
-      </td>
-      <td className="size">{formatBytes(item.bytes)}</td>
-    </tr>
+      </div>
+      <ul className="downloads-list">
+        {items.map((d, i) => (
+          <li key={d.id}>
+            <span className="downloads-swatch" style={{ opacity: shade(i) }} aria-hidden="true" />
+            <span className="downloads-name">
+              {d.name}
+              <span className="downloads-job">{d.job}</span>
+            </span>
+            <span className="downloads-size">{formatBytes(d.bytes)}</span>
+          </li>
+        ))}
+        <li className="downloads-extra">
+          <span className="downloads-swatch" aria-hidden="true" />
+          <span className="downloads-name">
+            {avatar.name}
+            <span className="downloads-job">Video interview only</span>
+          </span>
+          <span className="downloads-size">+{formatBytes(avatar.bytes)}</span>
+        </li>
+      </ul>
+    </section>
   )
 }

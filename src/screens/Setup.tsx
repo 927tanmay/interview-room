@@ -1,10 +1,12 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import aarav from '../assets/aarav.webp'
+import ananya from '../assets/ananya.webp'
 import type { Display, Mode } from '../app/state'
 import { ChoiceChips } from '../components/ChoiceChips'
 import { LoadProgress } from '../components/LoadProgress'
 import { MicCheck } from '../components/MicCheck'
 import { ScreenFrame } from '../components/ScreenFrame'
-import { allReady, type LoadState } from '../voice/loading'
+import { allReady, overallProgress, type LoadState } from '../voice/loading'
 import type { BankQuestion, Level, Track } from '../interview/bank'
 import type { Mood } from '../interview/lines'
 import {
@@ -77,6 +79,9 @@ export function Setup({
   const set = (patch: Partial<InterviewSettings>) => onSettingsChange(patch)
   const countMax = settings.round === 'full' ? FULL_LOOP_COUNT : Math.min(5, availableCount(settings.round, settings.track, settings.level))
 
+  const pct = overallProgress(mode, load)
+  const faces = { ananya, aarav }
+
   return (
     <ScreenFrame title={practice ? 'Practice one question again' : 'Set up your interview'}>
       {practice && (
@@ -87,16 +92,30 @@ export function Setup({
         </section>
       )}
       {chosen ? (
-        <section aria-labelledby="display-title" className="panel">
-          <h2 id="display-title" ref={chosenRef} tabIndex={-1}>
-            {chosen.name} with {interviewer}
-          </h2>
-          <p className="muted">
-            {chosen.detail} To change this, go back to the home page.
-          </p>
-        </section>
+        <div className="setup-top">
+          <section aria-labelledby="display-title" className="panel interviewer-card">
+            <span className="face">
+              <img src={faces[settings.interviewer]} alt="" width={600} height={801} />
+            </span>
+            <div>
+              <h2 id="display-title" ref={chosenRef} tabIndex={-1}>
+                {chosen.name} with {interviewer}
+              </h2>
+              <p className="muted">
+                {chosen.detail} To change this, go back to the home page.
+              </p>
+            </div>
+          </section>
+          <section aria-labelledby="download-title" className="panel">
+            <h2 id="download-title" className="sr-only">
+              Models ({mode === 'heavy' ? 'Heavy' : 'Light'} mode)
+            </h2>
+            <LoadProgress mode={mode} state={load} />
+          </section>
+        </div>
       ) : (
         <form
+          id="display-form"
           className="panel step-form"
           onSubmit={(e) => {
             e.preventDefault()
@@ -105,135 +124,143 @@ export function Setup({
         >
           <fieldset className="choice-group">
             <legend>How do you want to meet the interviewer?</legend>
-            {DISPLAYS.map((d) => (
-              <label key={d.value} className="choice">
-                <input
-                  type="radio"
-                  name="display"
-                  id={`display-${d.value}`}
-                  value={d.value}
-                  checked={pendingDisplay === d.value}
-                  onChange={() => setPendingDisplay(d.value)}
-                />
-                <span>
-                  <span className="choice-name">{d.name}</span>
-                  <span className="choice-detail">{d.detail}</span>
-                </span>
-              </label>
-            ))}
+            <div className="choice-row">
+              {DISPLAYS.map((d) => (
+                <label key={d.value} className="choice">
+                  <input
+                    type="radio"
+                    name="display"
+                    id={`display-${d.value}`}
+                    value={d.value}
+                    checked={pendingDisplay === d.value}
+                    onChange={() => setPendingDisplay(d.value)}
+                  />
+                  <span>
+                    <span className="choice-name">{d.name}</span>
+                    <span className="choice-detail">{d.detail}</span>
+                  </span>
+                </label>
+              ))}
+            </div>
           </fieldset>
-          <ChoiceChips<InterviewerId>
-            name="interviewer"
-            legend="Who interviews you?"
-            options={[
-              { value: 'ananya', label: 'Ananya' },
-              { value: 'aarav', label: 'Aarav' },
-            ]}
-            value={pendingInterviewer}
-            onChange={setPendingInterviewer}
-          />
+          <fieldset className="choice-group">
+            <legend>Who interviews you?</legend>
+            <div className="choice-row">
+              {(['ananya', 'aarav'] as const).map((id) => (
+                <label key={id} className="choice person">
+                  <input
+                    type="radio"
+                    name="interviewer"
+                    id={`interviewer-${id}`}
+                    value={id}
+                    checked={pendingInterviewer === id}
+                    onChange={() => setPendingInterviewer(id)}
+                  />
+                  <span className="face">
+                    <img src={faces[id]} alt="" width={600} height={801} />
+                  </span>
+                  <span>
+                    <span className="choice-name">{INTERVIEWERS[id].name}</span>
+                    <span className="choice-detail">{id === 'ananya' ? 'Warm, measured voice.' : 'Calm, steady voice.'}</span>
+                  </span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
           <p className="muted">
             Continuing starts the download for {mode === 'heavy' ? 'Heavy' : 'Light'} mode. These two
             choices stay fixed after that.
           </p>
-          <div className="actions">
-            <button type="submit" className="primary">
-              Continue
-            </button>
-          </div>
         </form>
       )}
 
       {chosen && (
         <>
-          <section aria-labelledby="download-title" className="panel">
-            <h2 id="download-title">Models ({mode === 'heavy' ? 'Heavy' : 'Light'} mode)</h2>
-            <LoadProgress mode={mode} state={load} />
-          </section>
-
           <section aria-labelledby="options-title" className="panel options">
             <h2 id="options-title">Your interview</h2>
-            <p className="muted">Fill this in while the models load.</p>
+            {!ready && <p className="muted">Fill this in while the models load.</p>}
 
-            {!practice && (
-              <>
-              <ChoiceChips<Track>
-                name="track"
-                legend="Track"
-                options={[
-                  { value: 'frontend', label: 'Frontend' },
-                  { value: 'backend', label: 'Backend' },
-                  { value: 'ml', label: 'Machine learning' },
-                ]}
-                value={settings.track}
-                onChange={(track) => set({ track })}
-              />
-              <ChoiceChips<Level>
-                name="level"
-                legend="Level"
-                options={[
-                  { value: 'intern', label: 'Intern' },
-                  { value: 'junior', label: 'Junior' },
-                  { value: 'mid', label: 'Mid-level' },
-                  { value: 'senior', label: 'Senior' },
-                ]}
-                value={settings.level}
-                onChange={(level) => set({ level })}
-              />
-              <ChoiceChips<RoundChoice>
-                name="round"
-                legend="Round"
-                options={[
-                  { value: 'full', label: 'Full loop' },
-                  { value: 'behavioural', label: 'Behavioural' },
-                  { value: 'technical', label: 'Technical' },
-                  { value: 'hr', label: 'HR' },
-                ]}
-                value={settings.round}
-                onChange={(round) => set({ round })}
-                hint={ROUND_DETAIL[settings.round]}
-              />
-              {settings.round !== 'full' && (
-                <ChoiceChips<number>
-                  name="count"
-                  legend="Questions"
-                  options={[3, 4, 5].map((n) => ({ value: n, label: String(n), disabled: n > countMax }))}
-                  value={settings.count}
-                  onChange={(count) => set({ count })}
-                />
+            <div className="options-grid">
+              {!practice && (
+                <>
+                  <ChoiceChips<Track>
+                    name="track"
+                    legend="Track"
+                    options={[
+                      { value: 'frontend', label: 'Frontend' },
+                      { value: 'backend', label: 'Backend' },
+                      { value: 'ml', label: 'Machine learning' },
+                    ]}
+                    value={settings.track}
+                    onChange={(track) => set({ track })}
+                  />
+                  <ChoiceChips<Level>
+                    name="level"
+                    legend="Level"
+                    options={[
+                      { value: 'intern', label: 'Intern' },
+                      { value: 'junior', label: 'Junior' },
+                      { value: 'mid', label: 'Mid-level' },
+                      { value: 'senior', label: 'Senior' },
+                    ]}
+                    value={settings.level}
+                    onChange={(level) => set({ level })}
+                  />
+                  <ChoiceChips<RoundChoice>
+                    name="round"
+                    legend="Round"
+                    options={[
+                      { value: 'full', label: 'Full loop' },
+                      { value: 'behavioural', label: 'Behavioural' },
+                      { value: 'technical', label: 'Technical' },
+                      { value: 'hr', label: 'HR' },
+                    ]}
+                    value={settings.round}
+                    onChange={(round) => set({ round })}
+                    hint={ROUND_DETAIL[settings.round]}
+                  />
+                  {settings.round !== 'full' && (
+                    <ChoiceChips<number>
+                      name="count"
+                      legend="Questions"
+                      options={[3, 4, 5].map((n) => ({ value: n, label: String(n), disabled: n > countMax }))}
+                      value={settings.count}
+                      onChange={(count) => set({ count })}
+                    />
+                  )}
+                </>
               )}
-              </>
-            )}
-            <ChoiceChips<number>
-              name="answer-length"
-              legend="Target length per answer"
-              options={[1, 2, 3].map((n) => ({ value: n, label: `${n} min` }))}
-              value={settings.answerMinutes}
-              onChange={(answerMinutes) => set({ answerMinutes })}
-              hint="Most behavioural answers aim for about 2 minutes. The timer turns amber near it and red past it."
-            />
-            <ChoiceChips<Mood>
-              name="mood"
-              legend="Interviewer's manner"
-              options={[
-                { value: 'friendly', label: 'Friendly' },
-                { value: 'neutral', label: 'Neutral' },
-                { value: 'tough', label: 'Tough' },
-              ]}
-              value={settings.mood}
-              onChange={(mood) => set({ mood })}
-              hint={MOOD_DETAIL[settings.mood]}
-            />
-            <div className="text-field">
-              <label htmlFor="candidate-name">What should {interviewer} call you? (optional)</label>
-              <input
-                id="candidate-name"
-                type="text"
-                autoComplete="given-name"
-                maxLength={40}
-                value={settings.candidateName}
-                onChange={(e) => set({ candidateName: e.target.value })}
+              <ChoiceChips<number>
+                name="answer-length"
+                legend="Target length per answer"
+                options={[1, 2, 3].map((n) => ({ value: n, label: `${n} min` }))}
+                value={settings.answerMinutes}
+                onChange={(answerMinutes) => set({ answerMinutes })}
+                hint="Most behavioural answers aim for about 2 minutes. The timer turns amber near it and red past it."
               />
+              <ChoiceChips<Mood>
+                name="mood"
+                legend="Interviewer's manner"
+                options={[
+                  { value: 'friendly', label: 'Friendly' },
+                  { value: 'neutral', label: 'Neutral' },
+                  { value: 'tough', label: 'Tough' },
+                ]}
+                value={settings.mood}
+                onChange={(mood) => set({ mood })}
+                hint={MOOD_DETAIL[settings.mood]}
+              />
+              <div className="text-field">
+                <label htmlFor="candidate-name">What should {interviewer} call you? (optional)</label>
+                <input
+                  id="candidate-name"
+                  type="text"
+                  autoComplete="given-name"
+                  maxLength={40}
+                  value={settings.candidateName}
+                  onChange={(e) => set({ candidateName: e.target.value })}
+                />
+              </div>
             </div>
           </section>
 
@@ -244,22 +271,37 @@ export function Setup({
         </>
       )}
 
-      <div className="actions">
+      {/* Always in view: one primary action, and while the models load it
+          shows their progress instead of a dead button. */}
+      <div className="setup-bar">
         <button type="button" onClick={onBack}>
           Back
         </button>
-        <button
-          type="button"
-          className="primary"
-          onClick={onStart}
-          disabled={!ready}
-          aria-describedby={chosen && !ready ? 'start-hint' : undefined}
-        >
-          Start interview
-        </button>
+        {chosen ? (
+          <button
+            type="button"
+            className={ready ? 'primary big' : 'primary big start-loading'}
+            onClick={onStart}
+            disabled={!ready}
+            aria-describedby={!ready ? 'start-hint' : undefined}
+            style={{ '--progress': `${pct}%` } as CSSProperties}
+          >
+            {ready ? (
+              'Start interview'
+            ) : (
+              <>
+                Loading<span className="wide-only"> models</span> · {pct}%
+              </>
+            )}
+          </button>
+        ) : (
+          <button type="submit" form="display-form" className="primary big">
+            Continue
+          </button>
+        )}
       </div>
       {chosen && !ready && (
-        <p id="start-hint" className="muted start-hint">
+        <p id="start-hint" className="sr-only">
           Start is available once every model has loaded.
         </p>
       )}

@@ -16,7 +16,8 @@ export default function AvatarPreview() {
       </main>
       <div className="voice-host">
         <div className="stage stage-video">
-          <Canvas camera={{ position: [0, 1.5, 1.2], fov: 30 }}>
+          {/* preserveDrawingBuffer: the canvas can be saved as a still. */}
+          <Canvas camera={{ position: [0, 1.5, 1.2], fov: 30 }} gl={{ preserveDrawingBuffer: true }}>
             <AiVoiceAvatar
               avatarPreset={who}
               lightingPreset="studio"
