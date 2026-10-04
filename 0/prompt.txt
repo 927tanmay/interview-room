@@ -337,3 +337,7 @@ keep everything in docs/UX.md: rounded, one radius scale, one accent colour, blu
 i would prefer inter 
 
 in the design we should show the donwload part properly so that its visible to user
+
+---
+
+yes please commit
