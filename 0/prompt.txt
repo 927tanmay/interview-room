@@ -1,0 +1,65 @@
+stop i have fixed it and it is deployed successfully
+
+---
+
+https://interview-room-iooj.onrender.com/
+
+---
+
+<pasted_content id="70fb">
+next up is the report, and i want to change the direction a bit from what's in the plan. instead of the app judging answers, the candidate reviews their own answers against what a strong answer covers, and the report builds its feedback from their choices plus what we measured. the app never decides if an answer was good. it gives them the right things to compare and reflects their own decisions back to them.
+
+we'll do this in two phases. phase 1 is the self-review and the measured report, no new models. phase 2 adds a small embedding model as an evidence finder. don't start phase 2 until i've tried phase 1 and said go.
+
+phase 1: self-review and measured report
+
+when the interview ends, they get a short self-review, one answer at a time. first they see the question and their own answer as transcribed, and a quick "how did that one feel?" with three options like good, okay, rough. then the points a strong answer covers show up next to their answer, and for each point they pick covered, partly, or missed. it should feel quick, a minute or two for the whole interview, with keyboard shortcuts and a progress indicator. they can skip the self-review and go straight to the numbers if they want.
+
+for this, the bank needs 3 to 5 short points per question, each with a small tag like result, own role, example, trade-off, edge case. check what the bank has now. if it's prose, turn it into points and tags and show me a few before doing all of them.
+
+the measured part is plain code, no gemma, so the report is instant. whisper drops um and uh on purpose, so we can't claim a full filler count. count the ones it keeps, like "you know", "i mean", "basically", "kind of", and "like" with a comma, highlight each one in the transcript, and say plainly that um and uh aren't counted. for hesitation use timing instead: time to the first word and pauses over 3 seconds, so check the engine keeps segment times. also measure time per answer against the target they set, words per minute against a rough 120 to 160 band, "i" vs "we", and numbers mentioned. skipped or empty answers are shown as skipped, not measured.
+
+then the report puts it together. at the top, up to three things to work on, picked by simple rules from their own marks and the numbers. for example, the tag they marked missed most often ("you left out the result in 3 of 4 stories"), answers they felt good about but marked mostly missed, the answer furthest over their target time. each one says where it came from and links to that answer. where the numbers and their marks disagree, point it out gently. if they ticked the result as covered but the answer had no numbers in it, ask if they could add one. if they ticked their own role but said "we" twelve times and "i" twice, mention it. below that, one card per answer with their answer quoted, fillers highlighted, the part past the target shaded, the follow-up and their reply, the numbers, and their marks. charts only for measured numbers, in plain svg with the numbers written on them, no chart library. each answer gets a "practise this one again" button. no scores anywhere. the bottom of the report says how each number was measured, that whisper base can mishear technical terms, and that nothing left the device.
+
+to build it without speaking a whole interview every time, add a dev page with a fake interview, and keep the measurements as plain functions tested in the node script like the engine. save the report and their marks in indexeddb so a reload doesn't lose them, and make it print cleanly to pdf. keep the look from docs/UX.md.
+
+at the end of phase 1, run one real interview in light mode end to end and tell me anything that looks off. then stop.
+
+phase 2: embedding model as an evidence finder
+
+a small embedding model, something minilm sized, around 20 to 30 mb, running on wasm so it doesn't fight the other models for the gpu. ask me before downloading it and tell me the exact size. load it during the interview so the report stays instant, and cache it like the others.
+
+for each point a strong answer covers, it finds the closest sentence in their answer. when they click or hover a point, that sentence gets highlighted, so they can check their own words before marking. it never highlights or suggests anything on its own before they've marked. after they mark, if they said missed but there's a close sentence, show "this might cover it, take another look". if they said covered but nothing is close, show "we couldn't find where you said this". the focus points at the top can use this too. the similarity number stays internal. pick the threshold from a few hand labelled answers in the fake interview and tell me how you picked it. if it's not reliable enough by sunday night, we ship phase 1 without it.
+
+one more thing, separate from the report: if heavy mode isn't working by monday 8 am ist, show it as coming soon on the home page so nobody can pick it.
+
+start by checking the bank and the engine snapshot. tell me what's there and how you'd split phase 1 into steps, then stop.
+</pasted_content id="70fb">
+
+---
+
+yes start with step 1
+
+---
+
+okay please continue looks sorted
+
+---
+
+yes
+
+---
+
+yes
+
+---
+
+yup
+
+---
+
+yes lets work on the report data
+
+---
+
+start with the review screens now
