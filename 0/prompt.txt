@@ -353,3 +353,7 @@ co authored line is acceptable. push the changes
 ---
 
 lets build the proper readme now
+
+---
+
+commit and push the changes
