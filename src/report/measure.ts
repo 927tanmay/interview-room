@@ -43,6 +43,12 @@ const FILLERS: { phrase: string; re: RegExp; unless?: RegExp }[] = [
   },
   // Only with a comma straight after: "it was, like, really slow".
   { phrase: 'like', re: /\blike(?=,)/gi, unless: /\b(would|i'd|we'd|you'd|look|looks|feel|feels|felt|seem|seems)\s+$/i },
+  // Whisper often puts the comma before it instead: "it goes to the, like we
+  // write it…" (a real run). Counted when a new clause follows, so "things,
+  // like React" is not.
+  { phrase: 'like', re: /(?<=,\s*)like(?=\s+(i|i'm|we|you|it|it's|they|he|she|so|suppose|um|uh)\b)/gi },
+  // Opening a sentence: "Like I took the feedback…".
+  { phrase: 'like', re: /(?<=^|[.!?]\s+)like(?=\s+(i|i'm|we|you|it|it's|they|he|she|so)\b)/gi },
 ]
 
 export type FillerHit = Span & { phrase: string }
@@ -89,12 +95,16 @@ const NUMBER = new RegExp(
 )
 // A year on its own ("back in 2023") is not a figure about the work.
 const YEAR = /^(19|20)\d\d$/
+// Nor is a vague amount: "one or two members" (a real run).
+const VAGUE = /\b(one or two|two or three|three or four|a couple of|a few)\b/gi
 
 export function findNumbers(text: string): Span[] {
   const t = normalise(text)
+  const vague = [...t.matchAll(VAGUE)].map((m) => [m.index, m.index + m[0].length])
   const spans: Span[] = []
   for (const m of t.matchAll(NUMBER)) {
     if (YEAR.test(m[0])) continue
+    if (vague.some(([a, b]) => m.index < b && m.index + m[0].length > a)) continue
     spans.push({ start: m.index, end: m.index + m[0].length, text: text.slice(m.index, m.index + m[0].length) })
   }
   return spans

@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react'
-import { onVoiceChange, voiceControls } from '../voice/voiceStore'
+import { devSoundLog, onVoiceChange, takeSoundEvents, voiceControls } from '../voice/voiceStore'
 import type { GemmaClient } from '../gemma/GemmaClient'
 import { pickQuestions, type BankQuestion } from './bank'
 import { InterviewEngine, type EngineSnapshot } from './engine'
@@ -54,7 +54,9 @@ export function startInterview(settings: InterviewSettings, only: BankQuestion |
   // answer is not over), the interviewer finished speaking (start counting
   // silence), the microphone went away (pause).
   let last = ''
+  takeSoundEvents()
   const unwatchVoice = onVoiceChange((v) => {
+    if (v.status !== last) devSoundLog(`status ${last || 'start'} → ${v.status}`)
     if (v.status === 'listening' && last !== 'listening') engine?.userStartedSpeaking()
     if (last === 'speaking' && v.status !== 'speaking') engine?.interviewerFinished()
     if (v.micError) engine?.pause('mic')
@@ -99,8 +101,12 @@ const DETECTOR_WAIT_MS = 1400
 // onInferenceStart, fired before Whisper runs). The candidate stopped talking
 // the detector's wait before now.
 export function speechEnded() {
+  devSoundLog('detector closed a stretch')
   engine?.speechEnded(Date.now() - DETECTOR_WAIT_MS)
 }
+
+// Dev only: the timing events since the interview started (step 8).
+export const takeDevTimeline = takeSoundEvents
 
 export const interview = {
   done: () => engine?.done(),

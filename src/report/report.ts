@@ -38,6 +38,9 @@ export type InterviewReport = {
   // By question id.
   review: Record<string, AnswerReview>
   reviewState: ReviewState
+  // Dev builds only: voice status changes and when sound was audible, to
+  // check the timings against what was heard.
+  devTimeline?: { at: number; event: string }[]
 }
 
 export function createReport(

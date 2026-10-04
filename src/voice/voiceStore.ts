@@ -55,6 +55,44 @@ let audioLevel: AudioLevel = { level: 0, source: 'idle' }
 
 export function setAudioLevel(level: number, source: AudioLevel['source']) {
   audioLevel = { level, source }
+  if (import.meta.env.DEV) trackSound(level, source)
+}
+
+// Dev only: when the interviewer's voice and the microphone are actually
+// audible, to check the report's timings against what was heard (step 8).
+// A sound starts above SOUND_ON and ends after SOUND_GAP_MS below SOUND_OFF.
+export type SoundEvent = { at: number; event: string }
+const SOUND_ON = 0.08
+const SOUND_OFF = 0.04
+const SOUND_GAP_MS = 300
+const sounds: SoundEvent[] = []
+const soundState: Record<'mic' | 'tts', { on: boolean; lastLoud: number }> = {
+  mic: { on: false, lastLoud: 0 },
+  tts: { on: false, lastLoud: 0 },
+}
+
+function trackSound(level: number, source: AudioLevel['source']) {
+  const now = Date.now()
+  for (const key of ['mic', 'tts'] as const) {
+    const st = soundState[key]
+    const loud = source === key && level > (st.on ? SOUND_OFF : SOUND_ON)
+    if (loud) {
+      if (!st.on) sounds.push({ at: now, event: `${key} sound starts` })
+      st.on = true
+      st.lastLoud = now
+    } else if (st.on && now - st.lastLoud > SOUND_GAP_MS) {
+      st.on = false
+      sounds.push({ at: st.lastLoud, event: `${key} sound ends` })
+    }
+  }
+}
+
+export function devSoundLog(event: string) {
+  if (import.meta.env.DEV) sounds.push({ at: Date.now(), event })
+}
+
+export function takeSoundEvents(): SoundEvent[] {
+  return sounds.splice(0, sounds.length)
 }
 
 export function getAudioLevel(): AudioLevel {

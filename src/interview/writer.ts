@@ -24,7 +24,10 @@ export function makeWriter(gemma: GemmaClient, persona: PersonaOptions) {
     try {
       const reply = await Promise.race([gemma.generate(messages, { maxNewTokens: 60 }), timeout])
       if (!reply || reply.stopped) return null
-      return guardFollowUp(reply.text, req.question.question, req.answer, req.angle.kind)
+      const angle = req.angle
+      const mention =
+        angle.kind === 'missing' ? req.question.keyPoints.find((k) => k.label === angle.label)?.match : undefined
+      return guardFollowUp(reply.text, req.question.question, req.answer, angle.kind, mention)
     } finally {
       clearTimeout(timer)
     }

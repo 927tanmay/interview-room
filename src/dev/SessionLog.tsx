@@ -28,6 +28,8 @@ function exchange(e: Exchange, start: number) {
   }
 }
 
+const t0 = (r: InterviewReport) => r.smallTalk?.askedAt ?? r.records[0]?.startedAt ?? r.createdAt
+
 function sessionLog(r: InterviewReport) {
   return {
     id: r.id,
@@ -45,6 +47,9 @@ function sessionLog(r: InterviewReport) {
     candidateQuestions: r.candidateQuestions && exchange(r.candidateQuestions, r.candidateQuestions.askedAt),
     review: r.review,
     reviewState: r.reviewState,
+    // Seconds from the start of the interview; each question's start below.
+    questionStarts: r.records.map((q) => ({ id: q.question.id, at: seconds(q.startedAt, t0(r)) })),
+    timeline: r.devTimeline?.map((e) => `${seconds(e.at, t0(r))} ${e.event}`),
   }
 }
 

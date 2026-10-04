@@ -105,7 +105,7 @@ export const BANK: BankQuestion[] = [
     question: 'Tell me about a time you improved something that was not working well.',
     intent: 'Whether they notice problems, take initiative, and measure the effect.',
     keyPoints: [
-      { label: 'what was wrong, with a number', match: ['slow', 'seconds', 'ms', 'percent', '%', 'errors', 'complaints'] },
+      { label: 'what was wrong, and how they knew', match: ['slow', 'seconds', 'ms', 'percent', '%', 'errors', 'complaints'] },
       { label: 'their own part', match: [' i ', "i'd", 'i decided', 'i built', 'i wrote', 'i proposed'] },
       { label: 'the measured result', match: ['dropped', 'reduced', 'faster', 'improved', 'from', 'down to'] },
     ],
@@ -174,7 +174,7 @@ export const BANK: BankQuestion[] = [
     keyPoints: [
       { label: 'what they had to learn and why', match: ['new', 'never used', 'had to learn', 'unfamiliar', 'first time'] },
       { label: 'how they learned it', match: ['docs', 'documentation', 'tutorial', 'built', 'small project', 'asked', 'course'] },
-      { label: 'applying it', match: ['shipped', 'used it', 'delivered', 'built', 'finished'] },
+      { label: 'how they used it for real', match: ['shipped', 'used it', 'delivered', 'built', 'finished'] },
     ],
     sampleAnswer:
       'Says what they needed to learn and the time limit, describes a specific learning approach (docs, a small spike, asking someone), and shows they used it for real by the deadline.',
@@ -286,7 +286,7 @@ export const BANK: BankQuestion[] = [
     keyPoints: [
       { label: 'what the teammate was stuck on', match: ['stuck', 'struggling', 'new', 'junior', 'blocked'] },
       { label: 'how they helped', match: ['paired', 'explained', 'reviewed', 'showed', 'guided'] },
-      { label: 'the teammate doing it themselves after', match: ['on their own', 'independently', 'themselves', 'now they'] },
+      { label: 'how the teammate got on afterwards', match: ['on their own', 'independently', 'themselves', 'now they'] },
     ],
     sampleAnswer:
       'Describes the teammate’s situation with empathy, how they helped (pairing, questions, reviews) without just doing the work, and how the teammate became more independent.',
@@ -414,7 +414,7 @@ export const BANK: BankQuestion[] = [
     intent: 'Collaboration habits and self-awareness about their style.',
     keyPoints: [
       { label: 'communication habits', match: ['communicate', 'update', 'standup', 'ask', 'share'] },
-      { label: 'an example', match: ['for example', 'once', 'when i', 'last'] },
+      { label: 'a real example', match: ['for example', 'once', 'when i', 'last'] },
     ],
     sampleAnswer:
       'Describes concrete habits (sharing progress early, asking for reviews, writing things down), gives a short example, and shows they adapt to the team.',
@@ -699,7 +699,7 @@ export const BANK: BankQuestion[] = [
     question: 'Can you explain what the useEffect hook does in React and when you would use it?',
     intent: 'Side effects after render, the dependency array, and cleanup.',
     keyPoints: [
-      { label: 'runs after render, for side effects', match: ['side effect', 'after render', 'after the render'] },
+      { label: 'what it is for and when it runs', match: ['side effect', 'after render', 'after the render'] },
       { label: 'the dependency array', match: ['dependenc', 'array', 're-run', 'rerun'] },
       { label: 'cleanup', match: ['cleanup', 'clean up', 'return a function', 'unsubscribe', 'unmount'] },
     ],
@@ -722,7 +722,7 @@ export const BANK: BankQuestion[] = [
     question: 'A page in your app feels slow. How would you find out why?',
     intent: 'Measuring before fixing: profiling tools, network, rendering, bundle size.',
     keyPoints: [
-      { label: 'measuring first', match: ['measure', 'lighthouse', 'profiler', 'devtools', 'performance tab'] },
+      { label: 'measuring before fixing', match: ['measure', 'lighthouse', 'profiler', 'devtools', 'performance tab'] },
       { label: 'network and bundle size', match: ['network', 'bundle', 'size', 'lazy', 'split', 'image'] },
       { label: 'rendering', match: ['re-render', 'rerender', 'render', 'memo', 'list', 'virtual'] },
     ],
@@ -767,9 +767,9 @@ export const BANK: BankQuestion[] = [
     question: 'When would you use CSS grid instead of flexbox?',
     intent: 'One-dimensional versus two-dimensional layout, with a real example.',
     keyPoints: [
-      { label: 'flexbox is one-dimensional', match: ['one dimension', 'one-dimensional', 'row or column', 'single axis'] },
-      { label: 'grid is two-dimensional', match: ['two dimension', 'two-dimensional', 'rows and columns'] },
-      { label: 'an example', match: ['navbar', 'card', 'dashboard', 'layout', 'gallery', 'form'] },
+      { label: 'how flexbox lays things out along one axis', match: ['one dimension', 'one-dimensional', 'row or column', 'single axis'] },
+      { label: 'how grid handles rows and columns together', match: ['two dimension', 'two-dimensional', 'rows and columns'] },
+      { label: 'a real example', match: ['navbar', 'card', 'dashboard', 'layout', 'gallery', 'form'] },
     ],
     sampleAnswer:
       'Flexbox lays things out along one axis and suits toolbars and rows of buttons; grid controls rows and columns together and suits page layouts and card grids. They are often combined.',
@@ -812,9 +812,9 @@ export const BANK: BankQuestion[] = [
     question: 'How do you decide where state should live in a React app?',
     intent: 'Keep state close to where it is used; server state versus client state.',
     keyPoints: [
-      { label: 'keep it local, lift when shared', match: ['local', 'lift', 'closest', 'parent'] },
-      { label: 'server state is different', match: ['server state', 'react query', 'tanstack', 'swr', 'cache'] },
-      { label: 'global stores when needed', match: ['context', 'redux', 'zustand', 'global'] },
+      { label: 'keeping state local and lifting it when shared', match: ['local', 'lift', 'closest', 'parent'] },
+      { label: 'where data from the server should live', match: ['server state', 'react query', 'tanstack', 'swr', 'cache'] },
+      { label: 'when a global store makes sense', match: ['context', 'redux', 'zustand', 'global'] },
     ],
     sampleAnswer:
       'Keeps state as local as possible and lifts it only when siblings share it, treats server data as a cache (React Query or SWR), and reaches for context or a store only for truly app-wide state.',
@@ -835,7 +835,7 @@ export const BANK: BankQuestion[] = [
     intent: 'Untrusted content executed as code, escaping, and avoiding raw HTML.',
     keyPoints: [
       { label: 'what XSS is', match: ['inject', 'script', 'untrusted', 'user input', 'malicious'] },
-      { label: 'escaping and not using raw HTML', match: ['escape', 'dangerouslysetinnerhtml', 'innerhtml', 'sanitize', 'sanitise'] },
+      { label: 'escaping, and avoiding raw HTML', match: ['escape', 'dangerouslysetinnerhtml', 'innerhtml', 'sanitize', 'sanitise'] },
       { label: 'extra defences', match: ['content security policy', 'csp', 'httponly', 'cookie'] },
     ],
     sampleAnswer:
@@ -880,8 +880,8 @@ export const BANK: BankQuestion[] = [
     question: 'How would you test a React component?',
     intent: 'Testing behaviour the user sees, not implementation details.',
     keyPoints: [
-      { label: 'test behaviour, not internals', match: ['behaviour', 'behavior', 'user', 'what the user sees', 'implementation'] },
-      { label: 'tools', match: ['testing library', 'jest', 'vitest', 'playwright', 'cypress'] },
+      { label: 'testing what the user sees', match: ['behaviour', 'behavior', 'user', 'what the user sees', 'implementation'] },
+      { label: 'the tools they would use', match: ['testing library', 'jest', 'vitest', 'playwright', 'cypress'] },
       { label: 'mocking the network', match: ['mock', 'msw', 'stub', 'fake'] },
     ],
     sampleAnswer:
@@ -952,7 +952,7 @@ export const BANK: BankQuestion[] = [
     intent: 'Faster reads at the cost of writes and space; choosing columns from real queries.',
     keyPoints: [
       { label: 'what an index does', match: ['faster', 'lookup', 'b-tree', 'btree', 'scan'] },
-      { label: 'the cost', match: ['write', 'slower insert', 'space', 'storage'] },
+      { label: 'the cost of an index', match: ['write', 'slower insert', 'space', 'storage'] },
       { label: 'choosing from real queries', match: ['where', 'query', 'explain', 'slow query'] },
     ],
     sampleAnswer:
@@ -1045,7 +1045,7 @@ export const BANK: BankQuestion[] = [
     keyPoints: [
       { label: 'an algorithm', match: ['token bucket', 'leaky bucket', 'sliding window', 'fixed window'] },
       { label: 'shared counters', match: ['redis', 'shared', 'distributed', 'gateway'] },
-      { label: 'what clients get', match: ['429', 'retry-after', 'header'] },
+      { label: 'what clients see when they are limited', match: ['429', 'retry-after', 'header'] },
     ],
     sampleAnswer:
       'Picks a token bucket or sliding window per user or key, keeps counters somewhere shared like Redis or the API gateway so all instances agree, returns 429 with Retry-After, and sets limits from real traffic.',
@@ -1068,7 +1068,7 @@ export const BANK: BankQuestion[] = [
     keyPoints: [
       { label: 'all or nothing', match: ['all or nothing', 'atomic', 'rollback', 'roll back'] },
       { label: 'ACID or isolation', match: ['acid', 'isolation', 'consistent', 'durable'] },
-      { label: 'an example', match: ['transfer', 'bank', 'order', 'payment', 'stock'] },
+      { label: 'a real example', match: ['transfer', 'bank', 'order', 'payment', 'stock'] },
     ],
     sampleAnswer:
       'A transaction groups changes so they all happen or none do. The classic example is a transfer: debit and credit together. Mentions ACID and that isolation levels decide what concurrent transactions can see.',
@@ -1134,7 +1134,7 @@ export const BANK: BankQuestion[] = [
     question: 'Your service starts returning errors in production. What do you do?',
     intent: 'Mitigate first, then investigate with logs, metrics and recent changes.',
     keyPoints: [
-      { label: 'mitigate first', match: ['rollback', 'roll back', 'revert', 'mitigate', 'feature flag'] },
+      { label: 'stopping the damage first', match: ['rollback', 'roll back', 'revert', 'mitigate', 'feature flag'] },
       { label: 'logs and metrics', match: ['logs', 'metrics', 'dashboard', 'trace', 'monitoring'] },
       { label: 'recent changes and follow-up', match: ['deploy', 'recent change', 'postmortem', 'post-mortem', 'root cause'] },
     ],
@@ -1159,9 +1159,9 @@ export const BANK: BankQuestion[] = [
     question: 'What is overfitting, and how do you deal with it?',
     intent: 'Train versus validation gap, and concrete remedies.',
     keyPoints: [
-      { label: 'what it is', match: ['training data', 'memoris', 'memoriz', 'generalis', 'generaliz', 'noise'] },
-      { label: 'how to spot it', match: ['validation', 'gap', 'test set', 'held out'] },
-      { label: 'remedies', match: ['regulari', 'dropout', 'more data', 'simpler', 'early stopping', 'augment'] },
+      { label: 'what overfitting is', match: ['training data', 'memoris', 'memoriz', 'generalis', 'generaliz', 'noise'] },
+      { label: 'how to spot overfitting', match: ['validation', 'gap', 'test set', 'held out'] },
+      { label: 'ways to reduce it', match: ['regulari', 'dropout', 'more data', 'simpler', 'early stopping', 'augment'] },
     ],
     sampleAnswer:
       'Overfitting is learning the training data, noise included, so it fails on new data; it shows as a large train versus validation gap. Remedies: more or augmented data, regularisation, dropout, early stopping, or a simpler model.',
@@ -1181,7 +1181,7 @@ export const BANK: BankQuestion[] = [
     question: 'When is accuracy the wrong metric, and what would you use instead?',
     intent: 'Class imbalance, precision and recall, and the cost of each error.',
     keyPoints: [
-      { label: 'imbalance', match: ['imbalanc', 'rare', 'fraud', '99%', 'minority'] },
+      { label: 'class imbalance', match: ['imbalanc', 'rare', 'fraud', '99%', 'minority'] },
       { label: 'precision and recall', match: ['precision', 'recall', 'f1', 'false positive', 'false negative'] },
       { label: 'cost of errors', match: ['cost', 'business', 'worse', 'miss'] },
     ],
@@ -1205,7 +1205,7 @@ export const BANK: BankQuestion[] = [
     keyPoints: [
       { label: 'what leakage is', match: ['future', 'test set', 'target', 'information'] },
       { label: 'splitting correctly', match: ['split', 'before', 'time', 'group'] },
-      { label: 'fitting preprocessing on train only', match: ['scaler', 'preprocess', 'fit on train', 'pipeline', 'normaliz', 'normalis'] },
+      { label: 'fitting preprocessing on the training data only', match: ['scaler', 'preprocess', 'fit on train', 'pipeline', 'normaliz', 'normalis'] },
     ],
     sampleAnswer:
       'Leakage is training on information unavailable at prediction time, which gives great offline scores that collapse in production. Avoids it by splitting first (by time or group where needed), fitting preprocessing on training data only, and checking features for target proxies.',
@@ -1226,8 +1226,8 @@ export const BANK: BankQuestion[] = [
     question: 'Can you explain the bias-variance trade-off?',
     intent: 'Underfitting versus overfitting, and model complexity.',
     keyPoints: [
-      { label: 'bias means underfitting', match: ['bias', 'underfit', 'too simple'] },
-      { label: 'variance means overfitting', match: ['variance', 'overfit', 'too complex', 'sensitive'] },
+      { label: 'what bias means', match: ['bias', 'underfit', 'too simple'] },
+      { label: 'what variance means', match: ['variance', 'overfit', 'too complex', 'sensitive'] },
       { label: 'the trade-off', match: ['trade', 'balance', 'complexity', 'sweet spot'] },
     ],
     sampleAnswer:
@@ -1250,7 +1250,7 @@ export const BANK: BankQuestion[] = [
     keyPoints: [
       { label: 'resampling or weights', match: ['oversampl', 'undersampl', 'smote', 'class weight', 'weight'] },
       { label: 'the right metric', match: ['precision', 'recall', 'f1', 'pr auc', 'auc'] },
-      { label: 'threshold', match: ['threshold'] },
+      { label: 'the decision threshold', match: ['threshold'] },
     ],
     sampleAnswer:
       'Switches to precision, recall or PR-AUC, tries class weights or resampling (on the training split only), tunes the decision threshold, and considers collecting more minority examples.',
@@ -1272,8 +1272,8 @@ export const BANK: BankQuestion[] = [
     intent: 'Understanding why data is missing before choosing a fix.',
     keyPoints: [
       { label: 'why it is missing', match: ['why', 'random', 'pattern', 'reason'] },
-      { label: 'options', match: ['impute', 'mean', 'median', 'drop', 'indicator', 'flag'] },
-      { label: 'fit on train only', match: ['train', 'pipeline', 'leak'] },
+      { label: 'the ways to fill or drop missing values', match: ['impute', 'mean', 'median', 'drop', 'indicator', 'flag'] },
+      { label: 'fitting it on the training data only', match: ['train', 'pipeline', 'leak'] },
     ],
     sampleAnswer:
       'First asks why values are missing, since missingness can itself be informative. Options: drop rows or columns, impute with median or a model, or add a missing indicator, fitting any imputer on training data only.',
@@ -1318,7 +1318,7 @@ export const BANK: BankQuestion[] = [
     keyPoints: [
       { label: 'following the gradient', match: ['gradient', 'slope', 'derivative', 'downhill', 'minimi'] },
       { label: 'the learning rate', match: ['learning rate', 'step size', 'step'] },
-      { label: 'too big or too small', match: ['diverge', 'overshoot', 'slow', 'too small', 'too large'] },
+      { label: 'a learning rate that is too big or too small', match: ['diverge', 'overshoot', 'slow', 'too small', 'too large'] },
     ],
     sampleAnswer:
       'It repeatedly moves the parameters a small step against the gradient of the loss. The learning rate is the step size: too large overshoots or diverges, too small is slow; schedules and optimisers like Adam help.',

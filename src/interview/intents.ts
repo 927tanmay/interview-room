@@ -4,7 +4,7 @@ import { wordCount } from './text'
 // when something goes wrong). Only short stretches are checked, so "sorry,
 // let me put that differently" in the middle of an answer stays an answer.
 
-export type Intent = 'repeat' | 'clarify' | 'dont-know' | 'pause' | 'resume' | 'stop' | 'garbled'
+export type Intent = 'repeat' | 'clarify' | 'dont-know' | 'skip' | 'pause' | 'resume' | 'stop' | 'garbled'
 
 const MAX_WORDS = 10
 
@@ -14,7 +14,10 @@ const PATTERNS: [Exclude<Intent, 'garbled'>, RegExp][] = [
   ['resume', /\b(i'm ready|i am ready|ready now|let's continue|lets continue|let's carry on|carry on|we can continue|resume|okay go on|let's go on)\b/],
   ['repeat', /\b(repeat (that|the question|it)|say (that|it) again|come again|one more time|pardon|didn't (catch|hear) (that|it|you)|can you repeat|could you repeat)\b|^sorry\??\.?$/],
   ['clarify', /\b(what do you mean|what does that mean|could you (clarify|rephrase)|can you (clarify|rephrase)|not sure what you('re| are) asking|what exactly are you asking|rephrase)\b/],
-  ['dont-know', /^(um+,? |uh+,? |so,? )?(i don't know|i do not know|i dunno|no idea|i have no idea|pass|i'm not sure|i am not sure|not sure|i can't think of (one|anything|an example))\b/],
+  // Seen in a real run: "Well, can you please skip this question?"
+  ['skip', /\b(skip (this|that|the) (one|question)|skip (it|this|that)|can (we|i) skip|could (we|i) skip|let's skip|lets skip|(go|move) (on )?to the next (one|question)|next question please|can we move on|could we move on|let's move on|lets move on)\b/],
+  // A few words may come first: "Sorry, I don't know about that." (a real run).
+  ['dont-know', /^((um+|uh+|so|sorry|honestly|actually|well|oh|hmm) )*(i don't know|i do not know|i don't really know|i dunno|no idea|i have no idea|pass|i'm not sure|i am not sure|not sure|i can't think of (one|anything|an example))\b/],
 ]
 
 // What Whisper often makes of noise, breathing or silence.

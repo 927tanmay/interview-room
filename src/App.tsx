@@ -2,7 +2,7 @@ import { lazy, Suspense, useReducer } from 'react'
 import { appReducer, initialState, isVoiceMounted } from './app/state'
 import { useDeviceCheck } from './app/useDeviceCheck'
 import { PrivacyNote } from './components/PrivacyNote'
-import { currentSnapshot, stopInterview } from './interview/session'
+import { currentSnapshot, stopInterview, takeDevTimeline } from './interview/session'
 import { createReport } from './report/report'
 import { saveReport } from './report/store'
 import { VoiceHost } from './voice/VoiceHost'
@@ -85,6 +85,7 @@ function App() {
               const snapshot = currentSnapshot()
               if (!snapshot || !state.mode) return
               const report = createReport(snapshot, state.settings, state.mode, state.display!)
+              if (import.meta.env.DEV) report.devTimeline = takeDevTimeline()
               void saveReport(report)
               stopInterview()
               dispatch({ type: 'finishInterview', reportId: report.id })

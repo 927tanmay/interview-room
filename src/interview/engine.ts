@@ -208,6 +208,10 @@ export class InterviewEngine {
         this.dontKnow()
         return ''
       }
+      if (intent === 'skip') {
+        this.skip()
+        return ''
+      }
     }
 
     const part: AnswerPart = { text: said, speechMs, at: this.deps.now() }
@@ -263,10 +267,11 @@ export class InterviewEngine {
     this.speakAside(this.askedText())
   }
 
+  // Skipping a follow-up moves on but keeps the main answer as answered.
   skip() {
     const record = this.records[this.index]
     if (!record || !this.live() || this.phase === 'candidate-questions') return
-    record.outcome = 'skipped'
+    if (this.phase !== 'follow-up') record.outcome = 'skipped'
     this.nextQuestion(lines.skip)
   }
 

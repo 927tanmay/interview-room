@@ -33,7 +33,17 @@ const ANGLE_WORDS: Partial<Record<string, RegExp>> = {
   ownership: /\b(personally|yourself|your (own )?(part|role|contribution)|did you|you did|you do|you yourself|you take|you took)\b/i,
 }
 
-export function guardFollowUp(raw: string, asked = '', answer = '', angle?: string): string | null {
+// A follow-up about a missing key point has to name it: `mention` is that
+// point's match phrases (the bank's own words for it). Seen in a real run:
+// asked about the missing "parsing and rendering", Gemma asked about DNS
+// again, which the answer had covered.
+export function guardFollowUp(
+  raw: string,
+  asked = '',
+  answer = '',
+  angle?: string,
+  mention?: string[],
+): string | null {
   if (ROLE_PLAY.test(raw.trim())) return null
   const answerNorm = norm(answer)
   const ss = sentences(raw)
@@ -48,6 +58,8 @@ export function guardFollowUp(raw: string, asked = '', answer = '', angle?: stri
   }
   const mustSay = angle ? ANGLE_WORDS[angle] : undefined
   if (mustSay && !mustSay.test(question)) return null
+  const padded = ` ${question.toLowerCase()} `
+  if (mention?.length && !mention.some((m) => padded.includes(m))) return null
   // Keep at most one short lead-in sentence before the question.
   const lead = qi > 0 && !isAsk(ss[qi - 1]) ? `${ss[qi - 1]} ` : ''
   const line = `${lead}${question}`
