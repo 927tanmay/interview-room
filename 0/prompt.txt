@@ -63,3 +63,7 @@ yes lets work on the report data
 ---
 
 start with the review screens now
+
+---
+
+yes commit the changes and work on the focus rules
