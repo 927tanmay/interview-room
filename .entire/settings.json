@@ -1,14 +1,14 @@
 {
-  "enabled": true,
   "checkpoints": {
     "primary": {
       "type": "git-refs"
     }
   },
+  "enabled": true,
   "redaction": {
-  "pii": {
-    "enabled": true,
-    "email": true
+    "pii": {
+      "enabled": true,
+      "email": true
+    }
   }
-} 
 }
