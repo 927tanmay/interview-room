@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import type { Display } from '../app/state'
 import { AnswerTimer } from '../components/AnswerTimer'
 import { ProgressDots } from '../components/ProgressDots'
+import { SelfView } from '../components/SelfView'
+import { useCamera } from '../app/useCamera'
 import { ScreenFrame } from '../components/ScreenFrame'
 import type { BankQuestion } from '../interview/bank'
 import type { ExchangeKind, PauseReason } from '../interview/engine'
@@ -47,6 +49,7 @@ export function Interview({
   const state = useInterview()
   const started = useRef(false)
   const [captions, setCaptions] = useState(true)
+  const camera = useCamera()
 
   useEffect(() => {
     if (started.current) return
@@ -55,6 +58,10 @@ export function Interview({
   }, [settings, practice])
 
   const finished = state?.phase === 'done'
+  const { turnOff: cameraOff } = camera
+  useEffect(() => {
+    if (finished) cameraOff()
+  }, [finished, cameraOff])
   // The engine is busy while Gemma words a follow-up; the package is idle then.
   const label = finished ? 'Finished' : state?.paused ? 'Paused' : state?.busy ? 'Thinking' : STATE_LABEL[voice.status]
   const timed = !finished && !!state?.currentKind && TIMED.includes(state.currentKind)
@@ -168,7 +175,21 @@ export function Interview({
         <button type="button" className="quiet" aria-pressed={captions} onClick={() => setCaptions((c) => !c)}>
           {captions ? 'Hide captions' : 'Show captions'}
         </button>
+        <button
+          type="button"
+          className="quiet camera-toggle"
+          aria-pressed={camera.on}
+          aria-describedby="camera-note"
+          disabled={camera.status === 'starting'}
+          onClick={() => void camera.toggle()}
+        >
+          {camera.on ? 'Hide my camera' : camera.status === 'starting' ? 'Starting camera…' : 'Show my camera'}
+        </button>
       </div>
+      <p id="camera-note" className="muted camera-note" role="status">
+        {camera.error ?? 'Your camera shows only on your screen: nothing is recorded, saved or sent.'}
+      </p>
+      <SelfView stream={camera.stream} />
     </ScreenFrame>
   )
 }

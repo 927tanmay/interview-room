@@ -1484,6 +1484,53 @@ button.quiet:hover {
   background: var(--surface);
 }
 
+/* The captions toggle pushes the quiet buttons right; the camera one follows. */
+button.quiet.camera-toggle {
+  margin-left: 0;
+}
+
+.camera-note {
+  font-size: 0.85rem;
+  text-align: right;
+  margin: 8px 0 0;
+}
+
+/* Self-view: a small mirrored camera in the stage's bottom corner, like a
+   video call; clear of the avatar's face (upper middle) and of the captions
+   (not on the stage). A plain surface, no blur over the canvas. */
+.voice-host {
+  position: relative;
+}
+
+.self-view {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  width: min(30%, 168px);
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--glass-border);
+  background: var(--solid-panel);
+  box-shadow: var(--glass-shadow);
+}
+
+.self-view video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+}
+
+@media (max-width: 760px) {
+  .self-view {
+    width: min(28%, 112px);
+    right: 8px;
+    bottom: 8px;
+  }
+}
+
 /* Interview room: state, progress, timer */
 
 .room-bar {
