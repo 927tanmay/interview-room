@@ -1498,7 +1498,9 @@ button.quiet.camera-toggle {
 /* Self-view: a small mirrored camera in the stage's bottom corner, like a
    video call; clear of the avatar's face (upper middle) and of the captions
    (not on the stage). A plain surface, no blur over the canvas. */
-.voice-host {
+/* Only the visible host: the hidden one on the setup screen must stay
+   position: fixed off stage, or it takes a place in the layout. */
+.voice-host:not(.voice-host--offstage) {
   position: relative;
 }
 
