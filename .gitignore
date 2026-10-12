@@ -41,3 +41,6 @@ models/
 *.njsproj
 *.sln
 *.sw?
+
+# Entire (turned off after the Hacktoberfest challenge; local data only)
+.entire/
